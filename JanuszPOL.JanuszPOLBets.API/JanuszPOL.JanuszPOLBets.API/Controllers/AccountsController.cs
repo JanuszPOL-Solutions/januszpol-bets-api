@@ -1,18 +1,29 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
+using JanuszPOL.JanuszPOLBets.Data.Entities;
+using JanuszPOL.JanuszPOLBets.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AccountsController : ControllerBase
+    public class AccountsController : BaseApiController
     {
-        private readonly DataContext _context;
+        private readonly UserManager<Account> _userManager;
+        private readonly SignInManager<Account> _signInManager;
+        private readonly ITokenService _tokenService;
 
-        public AccountsController(DataContext context)
+        public AccountsController(UserManager<Account> userManager, SignInManager<Account> signInManager, ITokenService tokenService)
         {
-            _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _tokenService = tokenService;
+        }
+        [HttpPost("register")]
+        public async Task<IActionResult> Accounts(AccountsViewModel model)Register()
+        {
+
         }
     }
+    
 }
