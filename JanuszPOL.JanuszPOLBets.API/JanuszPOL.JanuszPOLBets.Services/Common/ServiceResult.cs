@@ -40,5 +40,14 @@
                 Result = result
             };
         }
+
+        public static new ServiceResult<T> WithErrors(params string[] errros)
+        {
+            return new ServiceResult<T>
+            {
+                IsError = true,
+                Errors = errros.ToList()
+            };
+        }
     }
 }

@@ -18,12 +18,21 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         [HttpGet("")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ServiceResult<IList<GetTeamsResult>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ServiceResult<IList<GetTeamsResult>>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ServiceResult<IList<GetTeamsResult>>>> Teams([FromQuery] GetTeamsInput input)
         {
-            //TODO: add validation
+            if (!TryValidateModel(input))
+            {
+                return BadRequest(ModelState);
+            }
+
             var result = await _teamsService.Get(input);
+
+            if (result.IsError)
+            {
+                return BadRequest(result.ErrorsMessage);
+            }
 
             return Ok(result);
         }
