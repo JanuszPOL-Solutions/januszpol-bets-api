@@ -1,16 +1,15 @@
-﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
-using JanuszPOL.JanuszPOLBets.Services;
+﻿using JanuszPOL.JanuszPOLBets.Services;
 using JanuszPOL.JanuszPOLBets.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using JanuszPOL.JanuszPOLBets.Services.Teams;
 
 namespace JanuszPOL.JanuszPOLBets.API.Extensions
 {
     public static class ApplicationServiceExtensions
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
+        public static IServiceCollection RegisterApplicationServices(this IServiceCollection services)
         {
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddDbContext<DataContext>(options => options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+            //services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<ITeamsService, TeamsService>();
 
             return services;
         }

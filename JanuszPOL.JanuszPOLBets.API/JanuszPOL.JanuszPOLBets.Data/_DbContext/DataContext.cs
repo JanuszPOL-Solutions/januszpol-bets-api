@@ -1,8 +1,8 @@
-﻿using JanuszPOL.JanuszPOLBets.Data.Entities;
+﻿using JanuszPOL.JanuszPOLBets.Data._DbContext.MappingProfiles;
+using JanuszPOL.JanuszPOLBets.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace JanuszPOL.JanuszPOLBets.Data._DbContext
 {
@@ -13,9 +13,11 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext
         }
 
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<Team> Teams { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            //TODO: use mapping
             builder.Entity<Account>()
                 .Property(x => x.IsDeleted)
                 .IsRequired()
@@ -23,6 +25,9 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext
             builder.Entity<Account>().
                 Property(x => x.CreatedAt)
                 .HasComputedColumnSql("GetUtcDate()");
+
+            builder.ApplyConfiguration(new TeamsMapping());
+
             base.OnModelCreating(builder);
         }
     }
