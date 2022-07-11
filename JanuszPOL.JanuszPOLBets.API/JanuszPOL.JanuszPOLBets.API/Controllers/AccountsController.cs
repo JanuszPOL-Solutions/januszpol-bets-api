@@ -19,11 +19,11 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             _signInManager = signInManager;
             _tokenService = tokenService;
         }
-        [HttpPost("register")]
-        public async Task<IActionResult> Accounts(AccountsViewModel model)Register()
-        {
+        //[HttpPost("register")]
+        //public async Task<IActionResult> Accounts(AccountsViewModel model)
+        //{
 
-        }
+        //}
     }
     
 }
