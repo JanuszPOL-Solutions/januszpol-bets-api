@@ -1,4 +1,5 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext.MappingProfiles;
+using JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,19 +15,15 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Team> Teams { get; set; }
+        public DbSet<Game> Games { get; set; }
+        public DbSet<GameResult> GamesResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            //TODO: use mapping
-            builder.Entity<Account>()
-                .Property(x => x.IsDeleted)
-                .IsRequired()
-                .HasDefaultValue(false);
-            builder.Entity<Account>().
-                Property(x => x.CreatedAt)
-                .HasComputedColumnSql("GetUtcDate()");
-
+            builder.ApplyConfiguration(new AccountsMapping());
             builder.ApplyConfiguration(new TeamsMapping());
+            builder.ApplyConfiguration(new GamesMapping());
+            builder.ApplyConfiguration(new GamesResultsMapping());
 
             base.OnModelCreating(builder);
         }

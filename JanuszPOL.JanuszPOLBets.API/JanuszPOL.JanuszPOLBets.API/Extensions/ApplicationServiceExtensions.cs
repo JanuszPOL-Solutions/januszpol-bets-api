@@ -1,4 +1,5 @@
 ﻿using JanuszPOL.JanuszPOLBets.Services;
+using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Interfaces;
 using JanuszPOL.JanuszPOLBets.Services.Teams;
 
@@ -10,6 +11,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Extensions
         {
             //services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<ITeamsService, TeamsService>();
+            services.AddScoped<IGamesService, GamesService>();
 
             return services;
         }
