@@ -14,7 +14,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             _eventService = eventService;
         }
 
-        [HttpGet("events")]
+        [HttpGet("")]
         [ProducesResponseType(typeof(ServiceResult<IList<GetEventsResult>>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -24,18 +24,6 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             {
                 return await _eventService.GetEvents();
             });
-        }
-
-        private async Task<ActionResult<ServiceResult<T>>> MethodWrapper<T>(Func<Task<ServiceResult<T>>> methodInternal)
-        {
-            var result = await methodInternal();
-
-            if (result.IsError)
-            {
-                return BadRequest(result.ErrorsMessage);
-            }
-
-            return Ok(result);
         }
     }
 }
