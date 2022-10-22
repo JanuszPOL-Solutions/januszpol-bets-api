@@ -10,3 +10,9 @@
 2. Install Entity Framework Core Tools: `dotnet tool install --global dotnet-ef`
 3. TODO: run migrations
 4. TODO
+
+# Migrations
+### Add migration example
+```
+ C:\...\JanuszPOL.JanuszPOLBets.Data> dotnet ef migrations add AddTeams --startup-project="../JanuszPOL.JanuszPOLBets.API/JanuszPOL.JanuszPOLBets.API.csproj"
+ ```
