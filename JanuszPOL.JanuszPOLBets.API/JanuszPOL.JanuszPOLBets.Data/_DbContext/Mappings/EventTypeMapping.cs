@@ -6,6 +6,9 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
 {
     public class EventTypeMapping : IEntityTypeConfiguration<EventType>
     {
+        public const long BooleanId = 1;
+        public const long ExactValueId = 2;
+        public const long TwoExactValuesId = 3;
         public void Configure(EntityTypeBuilder<EventType> builder)
         {
             builder.HasKey(x => x.Id);
@@ -15,13 +18,18 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
             builder.HasData(
                 new EventType
                 {
-                    Id = 1,
+                    Id = BooleanId,
                     Type = EventType.RuleType.Boolean
                 },
                 new EventType
                 {
-                    Id = 2,
+                    Id = ExactValueId,
                     Type = EventType.RuleType.ExactValue
+                },
+                new EventType
+                {
+                    Id = TwoExactValuesId,
+                    Type = EventType.RuleType.TwoExactValues
                 });
         }
     }

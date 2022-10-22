@@ -5,7 +5,8 @@
         public enum RuleType
         {
             Boolean,
-            ExactValue
+            ExactValue,
+            TwoExactValues
         }
 
         public long Id { get; set; }

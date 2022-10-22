@@ -6,18 +6,77 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
 {
     public class EventMapping : IEntityTypeConfiguration<Event>
     {
+        private const int DefaultBetCost = 1;
+        private const int DefaultWinValue = 2;
+
         public void Configure(EntityTypeBuilder<Event> builder)
         {
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.Id).UseIdentityColumn().IsRequired();
+            builder.Property(x => x.Id).UseIdentityColumn().IsRequired().ValueGeneratedOnAdd();
 
             builder.Property(x => x.Name).IsRequired().HasMaxLength(128);
             builder.Property(x => x.Description).IsRequired().HasMaxLength(128);
-            builder.Property(x => x.BetCost).IsRequired().HasDefaultValue(1);
-            builder.Property(x => x.WinValue).IsRequired().HasDefaultValue(2);
+            builder.Property(x => x.BetCost).IsRequired().HasDefaultValue(DefaultBetCost);
+            builder.Property(x => x.WinValue).IsRequired().HasDefaultValue(DefaultWinValue);
             builder.Property(x => x.EventTypeId).IsRequired();
 
             builder.HasOne(x => x.EventType).WithMany().HasForeignKey(x => x.EventTypeId);
+
+            var id = 1;
+
+            var eventsCollection = new List<Event>
+            {
+                new Event
+                {
+                    Id = id++,
+                    Name = "Wygrana w dogrywce",
+                    Description = "Zadecyduj czy mecz zakończy się w doliczonym czasie gry",
+                    EventTypeId = EventTypeMapping.BooleanId
+                },
+                new Event
+                {
+                    Id = id++,
+                    Name = "Wygrana w karnych",
+                    Description = "Zadecyduj czy mecz zakończy się doperio po rzutach karnych",
+                    EventTypeId = EventTypeMapping.BooleanId
+                },
+                new Event
+                {
+                    Id = id++,
+                    Name = "Ilość żółtych kartek (>=)",
+                    Description = "Zadecyduj ile co najmniej zostanie pokazanych zółtych kartek",
+                    EventTypeId = EventTypeMapping.BooleanId
+                },
+                new Event
+                {
+                    Id = id++,
+                    Name = "Ilość bramek",
+                    Description = "Zadecyduj ile co najmniej padnie bramek",
+                    EventTypeId = EventTypeMapping.ExactValueId
+                },
+                new Event
+                {
+                    Id = id++,
+                    Name = "Dokładny wynik",
+                    Description = "Wytypuj konkretny wynik meczu",
+                    EventTypeId = EventTypeMapping.TwoExactValuesId
+                }
+            };
+
+            var goalsBeforeValues = new int[] { 10 };
+
+            foreach(var minute in goalsBeforeValues)
+            {
+                eventsCollection.Add(new Event
+                {
+                    Id = id++,
+                    Name = $"Bramka do {minute} minuty",
+                    Description = $"Zadecyduj czy bramka padnie do {minute} minuty",
+                    EventTypeId = EventTypeMapping.BooleanId
+                });
+            }
+
+            builder.HasData(eventsCollection);
         }
     }
 }
