@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.RegisterDataContext(builder.Configuration);
 builder.Services.RegisterRepositories();
 builder.Services.RegisterApplicationServices();
-//builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddIdentityServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -35,6 +35,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Authentication & Authorization
+app.UseAuthentication();
 
 app.UseAuthorization();
 
