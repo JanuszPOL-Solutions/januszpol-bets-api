@@ -1,4 +1,5 @@
-﻿using System.Net.Mime;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mime;
 using JanuszPOL.JanuszPOLBets.Repository.Account.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Account;
 using JanuszPOL.JanuszPOLBets.Services.Common;
@@ -18,7 +19,7 @@ public class AccountsController : BaseApiController
     }
     [HttpPost("register")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
@@ -35,7 +36,7 @@ public class AccountsController : BaseApiController
 
     [HttpPost("register-admin")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RegisterAdmin([FromBody] RegisterDto registerDto)
@@ -51,7 +52,7 @@ public class AccountsController : BaseApiController
     }
     [HttpPost("login")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceResult<JwtSecurityToken>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
