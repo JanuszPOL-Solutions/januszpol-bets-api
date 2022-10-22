@@ -1,6 +1,6 @@
-﻿namespace JanuszPOL.JanuszPOLBets.Repository.Teams.Dto;
+﻿namespace JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 
-public class GetTeamDto
+public class GetGameDto
 {
     public string NameContains { get; set; }
     public string NameStartsWith { get; set; }
