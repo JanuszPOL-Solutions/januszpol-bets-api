@@ -1,6 +1,7 @@
 ﻿using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
