@@ -1,53 +1,52 @@
-﻿namespace JanuszPOL.JanuszPOLBets.Services.Common
+﻿namespace JanuszPOL.JanuszPOLBets.Services.Common;
+
+public class ServiceResult
 {
-    public class ServiceResult
+    public bool IsError { get; protected set; }
+    public List<string> Errors { get; protected set; }
+    public string ErrorsMessage => string.Join('|', Errors);
+
+    protected ServiceResult() { }
+
+    public static ServiceResult WithSuccess()
     {
-        public bool IsError { get; protected set; }
-        public List<string> Errors { get; protected set; }
-        public string ErrorsMessage => string.Join('|', Errors);
-
-        protected ServiceResult() { }
-
-        public static ServiceResult WithSuccess()
+        return new ServiceResult
         {
-            return new ServiceResult
-            {
-                IsError = false,
-                Errors = new List<string>()
-            };
-        }
-
-        public static ServiceResult WithErrors(params string[] errros)
-        {
-            return new ServiceResult
-            {
-                IsError = true,
-                Errors = errros.ToList()
-            };
-        }
+            IsError = false,
+            Errors = new List<string>()
+        };
     }
 
-    public class ServiceResult<T> : ServiceResult
+    public static ServiceResult WithErrors(params string[] errros)
     {
-        public T Result { get; private set; }
-
-        public static ServiceResult<T> WithSuccess(T result)
+        return new ServiceResult
         {
-            return new ServiceResult<T>
-            {
-                IsError = false,
-                Errors = new List<string>(),
-                Result = result
-            };
-        }
+            IsError = true,
+            Errors = errros.ToList()
+        };
+    }
+}
 
-        public static new ServiceResult<T> WithErrors(params string[] errros)
+public class ServiceResult<T> : ServiceResult
+{
+    public T Result { get; private set; }
+
+    public static ServiceResult<T> WithSuccess(T result)
+    {
+        return new ServiceResult<T>
         {
-            return new ServiceResult<T>
-            {
-                IsError = true,
-                Errors = errros.ToList()
-            };
-        }
+            IsError = false,
+            Errors = new List<string>(),
+            Result = result
+        };
+    }
+
+    public static new ServiceResult<T> WithErrors(params string[] errros)
+    {
+        return new ServiceResult<T>
+        {
+            IsError = true,
+            Errors = errros.ToList()
+        };
     }
 }

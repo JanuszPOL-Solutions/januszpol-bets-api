@@ -1,16 +1,15 @@
 ﻿using JanuszPOL.JanuszPOLBets.Repository.Games;
 using JanuszPOL.JanuszPOLBets.Repository.Teams;
 
-namespace JanuszPOL.JanuszPOLBets.API.Extensions
-{
-    public static class RepositoryExtensions
-    {
-        public static IServiceCollection RegisterRepositories(this IServiceCollection services)
-        {
-            services.AddScoped<ITeamsRepository, TeamsRepository>();
-            services.AddScoped<IGamesRepository, GamesRepository>();
+namespace JanuszPOL.JanuszPOLBets.API.Extensions;
 
-            return services;
-        }
+public static class RepositoryExtensions
+{
+    public static IServiceCollection RegisterRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<ITeamsRepository, TeamsRepository>();
+        services.AddScoped<IGamesRepository, GamesRepository>();
+
+        return services;
     }
 }

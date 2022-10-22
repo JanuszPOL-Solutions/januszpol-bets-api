@@ -1,61 +1,58 @@
 ﻿using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
-using JanuszPOL.JanuszPOLBets.Services.Teams.ServiceModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
-namespace JanuszPOL.JanuszPOLBets.API.Controllers
+namespace JanuszPOL.JanuszPOLBets.API.Controllers;
+
+public class GamesController : BaseApiController
 {
-    public class GamesController : BaseApiController
+    private readonly IGamesService _gamesService;
+
+    public GamesController(IGamesService gamesService)
     {
-        private readonly IGamesService _gamesService;
+        _gamesService = gamesService;
+    }
 
-        public GamesController(IGamesService gamesService)
+    [HttpGet("all")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetAllGames()
+    {
+
+
+        var result = await _gamesService.GetAll();
+
+        if (result.IsError)
         {
-            _gamesService = gamesService;
+            return BadRequest(result.ErrorsMessage);
         }
 
-        [HttpGet("all")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetAllGames()
+        return Ok(result);
+    }
+
+    [HttpGet("")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetGames([FromQuery] GetGamesInput input)
+    {
+        if (!TryValidateModel(input))
         {
-
-
-            var result = await _gamesService.GetAll();
-
-            if (result.IsError)
-            {
-                return BadRequest(result.ErrorsMessage);
-            }
-
-            return Ok(result);
+            return BadRequest(ModelState);
         }
 
-        [HttpGet("")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetGames([FromQuery] GetGamesInput input)
+        var result = await _gamesService.Get(input);
+
+        if (result.IsError)
         {
-            if (!TryValidateModel(input))
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _gamesService.Get(input);
-
-            if (result.IsError)
-            {
-                return BadRequest(result.ErrorsMessage);
-            }
-
-            return Ok(result);
+            return BadRequest(result.ErrorsMessage);
         }
+
+        return Ok(result);
     }
 }

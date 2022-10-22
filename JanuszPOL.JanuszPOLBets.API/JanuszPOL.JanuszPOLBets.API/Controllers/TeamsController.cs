@@ -4,37 +4,36 @@ using JanuszPOL.JanuszPOLBets.Services.Teams.ServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
-namespace JanuszPOL.JanuszPOLBets.API.Controllers
+namespace JanuszPOL.JanuszPOLBets.API.Controllers;
+
+public class TeamsController : BaseApiController
 {
-    public class TeamsController : BaseApiController
+    private readonly ITeamsService _teamsService;
+
+    public TeamsController(ITeamsService teamsService)
     {
-        private readonly ITeamsService _teamsService;
+        _teamsService = teamsService;
+    }
 
-        public TeamsController(ITeamsService teamsService)
+    [HttpGet("")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(ServiceResult<IList<GetTeamsResult>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ServiceResult<IList<GetTeamsResult>>>> Teams([FromQuery] GetTeamsInput input)
+    {
+        if (!TryValidateModel(input))
         {
-            _teamsService = teamsService;
+            return BadRequest(ModelState);
         }
 
-        [HttpGet("")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(ServiceResult<IList<GetTeamsResult>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult<IList<GetTeamsResult>>>> Teams([FromQuery] GetTeamsInput input)
+        var result = await _teamsService.Get(input);
+
+        if (result.IsError)
         {
-            if (!TryValidateModel(input))
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _teamsService.Get(input);
-
-            if (result.IsError)
-            {
-                return BadRequest(result.ErrorsMessage);
-            }
-
-            return Ok(result);
+            return BadRequest(result.ErrorsMessage);
         }
+
+        return Ok(result);
     }
 }
