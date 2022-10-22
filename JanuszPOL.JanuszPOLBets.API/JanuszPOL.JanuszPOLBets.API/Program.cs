@@ -1,4 +1,6 @@
 using JanuszPOL.JanuszPOLBets.API.Extensions;
+using JanuszPOL.JanuszPOLBets.Data._DbContext;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+        dataContext.Database.Migrate();
+    }
 }
 
 app.UseHttpsRedirection();
