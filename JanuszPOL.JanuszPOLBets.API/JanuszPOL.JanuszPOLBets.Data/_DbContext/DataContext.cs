@@ -17,9 +17,9 @@ public class DataContext : IdentityDbContext<Account, IdentityRole<long>, long>
     public DbSet<Team> Teams { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<GameResult> GamesResults { get; set; }
-    //public DbSet<EventType> EventTypes { get; set; }
-    //public DbSet<Event> Event { get; set; }
-    //public DbSet<EventBet> EventBet { get; set; }
+    public DbSet<EventType> EventTypes { get; set; }
+    public DbSet<Event> Event { get; set; }
+    public DbSet<EventBet> EventBet { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -27,9 +27,9 @@ public class DataContext : IdentityDbContext<Account, IdentityRole<long>, long>
         builder.ApplyConfiguration(new TeamsMapping());
         builder.ApplyConfiguration(new GamesMapping());
         builder.ApplyConfiguration(new GamesResultsMapping());
-        //builder.ApplyConfiguration(new EventMapping());
-        //builder.ApplyConfiguration(new EventTypeMapping());
-        //builder.ApplyConfiguration(new EventBetMapping());
+        builder.ApplyConfiguration(new EventTypeMapping());
+        builder.ApplyConfiguration(new EventMapping());
+        builder.ApplyConfiguration(new EventBetMapping());
 
         base.OnModelCreating(builder);
     }
