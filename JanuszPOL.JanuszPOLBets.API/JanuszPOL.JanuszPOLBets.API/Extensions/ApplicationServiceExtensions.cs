@@ -1,4 +1,5 @@
-﻿using JanuszPOL.JanuszPOLBets.Services.Games;
+﻿using JanuszPOL.JanuszPOLBets.Services.Account;
+using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Teams;
 
 namespace JanuszPOL.JanuszPOLBets.API.Extensions;
@@ -10,6 +11,7 @@ public static class ApplicationServiceExtensions
         //services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IGamesService, GamesService>();
+        services.AddTransient<IAccountService, AccountService>();
 
         return services;
     }
