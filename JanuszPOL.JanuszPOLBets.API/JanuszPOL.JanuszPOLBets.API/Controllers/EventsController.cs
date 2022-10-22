@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
 {
+    [AllowAnonymous]
     public class EventsController : BaseApiController
     {
         private readonly IEventService _eventService;

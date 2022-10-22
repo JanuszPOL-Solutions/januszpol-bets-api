@@ -8,7 +8,7 @@
         public long AccountId { get; set; }
         public int? Value1 { get; set; }
         public int? Value2 { get; set; }
-        public int? Result { get; set; }
+        public bool? Result { get; set; }
 
 
         public Event Event { get; set; }
