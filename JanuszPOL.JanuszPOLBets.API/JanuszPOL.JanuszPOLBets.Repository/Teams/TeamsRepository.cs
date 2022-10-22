@@ -7,6 +7,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Teams;
 public interface ITeamsRepository
 {
     Task<GetTeamResultDto[]> Get(GetTeamDto dto);
+    bool Exists(long id);
 }
 
 public class TeamsRepository : ITeamsRepository
@@ -34,5 +35,9 @@ public class TeamsRepository : ITeamsRepository
             .ToArrayAsync();
 
         return teams;
+    }
+    public bool Exists(long id)
+    {
+        return _db.Teams.Any(x => x.Id == id);
     }
 }

@@ -1,4 +1,5 @@
-﻿using JanuszPOL.JanuszPOLBets.API.Services;
+﻿using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
+using JanuszPOL.JanuszPOLBets.API.Services;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
@@ -16,6 +17,38 @@ public class GamesController : BaseApiController
     {
         _gamesService = gamesService;
     }
+
+    [HttpPut("admin/update-game")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public IActionResult UpdateGame(UpdateGameInput updateInput)
+    {
+        if (!TryValidateModel(updateInput))
+        {
+            return BadRequest(ModelState);
+        }
+        _gamesService.UpdateGame(updateInput);
+
+        return Ok();
+    }
+
+    [HttpPost("admin/add-game")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public IActionResult AddGame([FromBody]AddGameInput gameInput)
+    {
+        if (!TryValidateModel(gameInput))
+        {
+            return BadRequest(ModelState);
+        }
+        if(!_gamesService.AddGame(gameInput))
+        {
+            return BadRequest("Nie no, tak to nie");
+        }
+
+        return Ok();
+    }
+    
 
     [HttpGet("all")]
     [Consumes(MediaTypeNames.Application.Json)]
