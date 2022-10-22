@@ -4,6 +4,7 @@ using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221022200428_AddEvent")]
+    partial class AddEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,62 +141,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasIndex("EventTypeId");
 
                     b.ToTable("Event");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            BetCost = 0,
-                            Description = "Zadecyduj czy mecz zakończy się w doliczonym czasie gry",
-                            EventTypeId = 1L,
-                            Name = "Wygrana w dogrywce",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            BetCost = 0,
-                            Description = "Zadecyduj czy mecz zakończy się doperio po rzutach karnych",
-                            EventTypeId = 1L,
-                            Name = "Wygrana w karnych",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            BetCost = 0,
-                            Description = "Zadecyduj ile co najmniej zostanie pokazanych zółtych kartek",
-                            EventTypeId = 1L,
-                            Name = "Ilość żółtych kartek (>=)",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            BetCost = 0,
-                            Description = "Zadecyduj ile co najmniej padnie bramek",
-                            EventTypeId = 2L,
-                            Name = "Ilość bramek",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 5L,
-                            BetCost = 0,
-                            Description = "Wytypuj konkretny wynik meczu",
-                            EventTypeId = 3L,
-                            Name = "Dokładny wynik",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 6L,
-                            BetCost = 0,
-                            Description = "Zadecyduj czy bramka padnie do 10 minuty",
-                            EventTypeId = 1L,
-                            Name = "Bramka do 10 minuty",
-                            WinValue = 0
-                        });
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Events.EventBet", b =>
@@ -260,11 +206,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         {
                             Id = 2L,
                             Type = "ExactValue"
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            Type = "TwoExactValues"
                         });
                 });
 
