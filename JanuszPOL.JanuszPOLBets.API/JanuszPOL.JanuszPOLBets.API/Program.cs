@@ -19,6 +19,15 @@ builder.Services.RegisterRepositories();
 builder.Services.RegisterApplicationServices();
 builder.Services.AddIdentityServices(builder.Configuration);
 
+const string AllowAll = "AllowAll";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(AllowAll, policy =>
+    {
+        policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,6 +41,8 @@ if (app.Environment.IsDevelopment())
         var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
         dataContext.Database.Migrate();
     }
+
+    app.UseCors(AllowAll);
 }
 
 app.UseHttpsRedirection();
