@@ -1,8 +1,10 @@
-﻿using JanuszPOL.JanuszPOLBets.Services.Common;
+﻿using JanuszPOL.JanuszPOLBets.API.Services;
+using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using System.Security.Claims;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers;
 
@@ -22,8 +24,6 @@ public class GamesController : BaseApiController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetAllGames()
     {
-
-
         var result = await _gamesService.GetAll();
 
         if (result.IsError)
