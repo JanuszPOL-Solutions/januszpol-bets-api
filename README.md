@@ -2,7 +2,7 @@
 # Conventions
 * NEVER merge to `main` branch!!!! Create new one from `main`, do your changes, push, create pull request, let know other devs, after review merg to `main` with squash
 * table names in singular form, eg. account table name is `Account`
-* tables primary key consist of table name and `Id` with `long` type , eg. Account table has PK with name: `AccountId` 
+* tables primary key are named `Id` with `long` type , eg. Account table has PK with name: `Id` 
 * all string columns has length constraint (resonable legth)
 * services do not use DbContext, all data requests are done in repositories
 # Installation
