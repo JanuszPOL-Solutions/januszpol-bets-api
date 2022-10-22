@@ -30,7 +30,8 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                     Description = x.Description,
                     Name = x.Name,
                     Id = x.Id,
-                    WinValue = x.WinValue
+                    WinValue = x.WinValue,
+                    EventType = GetEventsResult.TranslateEventType(x.EventType)
                 }).ToList());
         }
     }
