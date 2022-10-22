@@ -1,28 +1,18 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
+namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings;
+
+public class GamesMapping : IEntityTypeConfiguration<Game>
 {
-    public class GamesMapping : IEntityTypeConfiguration<Game>
+    public void Configure(EntityTypeBuilder<Game> builder)
     {
-        public void Configure(EntityTypeBuilder<Game> builder)
-        {
-            builder.HasKey(x => x.GameId);
-            builder.Property(x => x.GameId).UseIdentityColumn().IsRequired();
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn().IsRequired();
+        builder.Property(x => x.GameDate).IsRequired();
 
-            builder.Property(x => x.GameDate).IsRequired();
-
-            builder.Property(x => x.Team1Score).IsRequired();
-
-            builder.Property(x => x.Team2Score).IsRequired();
-
-
-        }
+        builder.HasOne(x => x.Team1).WithMany().HasForeignKey(x => x.Team1Id).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(x => x.Team2).WithMany().HasForeignKey(x => x.Team2Id).OnDelete(DeleteBehavior.Restrict);
     }
 }

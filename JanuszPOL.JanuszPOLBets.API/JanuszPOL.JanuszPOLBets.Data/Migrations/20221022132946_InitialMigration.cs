@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -51,6 +51,32 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GamesResults",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GamesResults", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Teams",
+                columns: table => new
+                {
+                    TeamId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    FlagUrl = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Teams", x => x.TeamId);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,6 +185,54 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Games",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Team1Id = table.Column<long>(type: "bigint", nullable: false),
+                    Team2Id = table.Column<long>(type: "bigint", nullable: false),
+                    GameDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Team1Score = table.Column<int>(type: "int", nullable: true),
+                    Team2Score = table.Column<int>(type: "int", nullable: true),
+                    Team1ScoreExtraTime = table.Column<int>(type: "int", nullable: true),
+                    Team2ScoreExtraTime = table.Column<int>(type: "int", nullable: true),
+                    Team1ScorePenalties = table.Column<int>(type: "int", nullable: true),
+                    Team2ScorePenalties = table.Column<int>(type: "int", nullable: true),
+                    GameResultId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Games", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Games_Teams_Team1Id",
+                        column: x => x.Team1Id,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Games_Teams_Team2Id",
+                        column: x => x.Team2Id,
+                        principalTable: "Teams",
+                        principalColumn: "TeamId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "GamesResults",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 0, "Draw" },
+                    { 1, "Team1" },
+                    { 2, "Team2" },
+                    { 3, "Team1ExtraTime" },
+                    { 4, "Team2ExtraTime" },
+                    { 5, "Team1Penalties" },
+                    { 6, "Team2Penalties" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -197,6 +271,28 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Games_Team1Id",
+                table: "Games",
+                column: "Team1Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Games_Team2Id",
+                table: "Games",
+                column: "Team2Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GamesResults_Name",
+                table: "GamesResults",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Teams_Name",
+                table: "Teams",
+                column: "Name",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -217,10 +313,19 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Games");
+
+            migrationBuilder.DropTable(
+                name: "GamesResults");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Teams");
         }
     }
 }

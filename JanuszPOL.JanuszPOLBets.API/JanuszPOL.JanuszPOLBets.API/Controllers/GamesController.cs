@@ -17,14 +17,14 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             _gamesService = gamesService;
         }
 
-      [HttpGet("all")]
+        [HttpGet("all")]
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetAllGames()
         {
-            
+
 
             var result = await _gamesService.GetAll();
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220719150619_AddGames")]
-    partial class AddGames
+    [Migration("20221022132946_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -107,22 +107,22 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Game", b =>
                 {
-                    b.Property<long>("GameId")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("GameId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
 
                     b.Property<DateTime>("GameDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("GameResultId")
+                    b.Property<int>("GameResultId")
                         .HasColumnType("int");
 
-                    b.Property<long?>("Team1IdTeamId")
+                    b.Property<long>("Team1Id")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("Team1Score")
+                    b.Property<int?>("Team1Score")
                         .HasColumnType("int");
 
                     b.Property<int?>("Team1ScoreExtraTime")
@@ -131,10 +131,10 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.Property<int?>("Team1ScorePenalties")
                         .HasColumnType("int");
 
-                    b.Property<long?>("Team2IdTeamId")
+                    b.Property<long>("Team2Id")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("Team2Score")
+                    b.Property<int?>("Team2Score")
                         .HasColumnType("int");
 
                     b.Property<int?>("Team2ScoreExtraTime")
@@ -143,36 +143,68 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.Property<int?>("Team2ScorePenalties")
                         .HasColumnType("int");
 
-                    b.HasKey("GameId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("GameResultId");
+                    b.HasIndex("Team1Id");
 
-                    b.HasIndex("Team1IdTeamId");
-
-                    b.HasIndex("Team2IdTeamId");
+                    b.HasIndex("Team2Id");
 
                     b.ToTable("Games");
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.GameResult", b =>
                 {
-                    b.Property<int>("GameResultId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("Id")
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GameResultId"), 1L, 1);
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.HasKey("GameResultId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("GamesResults");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0,
+                            Name = "Draw"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Name = "Team1"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Team2"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Team1ExtraTime"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Team2ExtraTime"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Team1Penalties"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Team2Penalties"
+                        });
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Team", b =>
@@ -335,23 +367,21 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Game", b =>
                 {
-                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.GameResult", "GameResult")
+                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.Team", "Team1")
                         .WithMany()
-                        .HasForeignKey("GameResultId");
+                        .HasForeignKey("Team1Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.Team", "Team1Id")
+                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.Team", "Team2")
                         .WithMany()
-                        .HasForeignKey("Team1IdTeamId");
+                        .HasForeignKey("Team2Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.Team", "Team2Id")
-                        .WithMany()
-                        .HasForeignKey("Team2IdTeamId");
+                    b.Navigation("Team1");
 
-                    b.Navigation("GameResult");
-
-                    b.Navigation("Team1Id");
-
-                    b.Navigation("Team2Id");
+                    b.Navigation("Team2");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>

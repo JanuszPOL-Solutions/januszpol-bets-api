@@ -25,7 +25,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Teams
                 .Where(x => string.IsNullOrEmpty(dto.NameStartsWith) || x.Name.ToLower().StartsWith(dto.NameStartsWith.ToLower()))
                 .Select(x => new GetTeamResultDto
                 {
-                    TeamId = x.TeamId,
+                    TeamId = x.Id,
                     Name = x.Name,
                     FlagUrl = x.FlagUrl
                 })

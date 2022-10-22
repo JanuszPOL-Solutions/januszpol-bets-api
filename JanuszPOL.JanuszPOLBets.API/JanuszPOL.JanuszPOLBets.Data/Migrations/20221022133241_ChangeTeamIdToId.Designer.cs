@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220522153425_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20221022133241_ChangeTeamIdToId")]
+    partial class ChangeTeamIdToId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -103,6 +103,133 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Game", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("GameDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GameResultId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("Team1Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Team1Score")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Team1ScoreExtraTime")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Team1ScorePenalties")
+                        .HasColumnType("int");
+
+                    b.Property<long>("Team2Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Team2Score")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Team2ScoreExtraTime")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Team2ScorePenalties")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Team1Id");
+
+                    b.HasIndex("Team2Id");
+
+                    b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.GameResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("GamesResults");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0,
+                            Name = "Draw"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Name = "Team1"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Team2"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Team1ExtraTime"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Team2ExtraTime"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Team1Penalties"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Team2Penalties"
+                        });
+                });
+
+            modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Team", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"), 1L, 1);
+
+                    b.Property<string>("FlagUrl")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Teams");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<long>", b =>
@@ -236,6 +363,25 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Game", b =>
+                {
+                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.Team", "Team1")
+                        .WithMany()
+                        .HasForeignKey("Team1Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JanuszPOL.JanuszPOLBets.Data.Entities.Team", "Team2")
+                        .WithMany()
+                        .HasForeignKey("Team2Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Team1");
+
+                    b.Navigation("Team2");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
