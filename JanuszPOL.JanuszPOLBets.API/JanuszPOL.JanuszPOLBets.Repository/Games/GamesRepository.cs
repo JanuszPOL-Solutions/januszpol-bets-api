@@ -1,4 +1,5 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
+using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,8 @@ public interface IGamesRepository
 {
     Task<GetGameResultDto[]> Get(GetGameDto dto);
     Task<GetGameResultDto[]> GetAll();
+    void Add(AddGameDto gameDto);
+    void Update(UpdateGameDto updateDto);
 
 }
 public class GamesRepository : IGamesRepository
@@ -17,6 +20,34 @@ public class GamesRepository : IGamesRepository
     public GamesRepository(DataContext db)
     {
         _db = db;
+    }
+
+    public void Update(UpdateGameDto updateDto)
+    {
+        var game = _db.Games.First(x => x.Id == updateDto.Id);
+        game.Team1Score = updateDto.Team1Score;
+        game.Team2Score = updateDto.Team2Score;
+        game.Team1ScoreExtraTime = updateDto.Team1ScoreExtraTime;
+        game.Team2ScoreExtraTime = updateDto.Team2ScoreExtraTime;
+        game.Team1ScorePenalties = updateDto.Team1ScorePenalties;
+        game.Team2ScorePenalties = updateDto.Team2ScorePenalties;
+        game.GameResultId = updateDto.GameResultId;
+        _db.SaveChanges();
+        
+    }
+    public void Add(AddGameDto gameDto)
+    {
+
+        var game = new Game
+        {
+            Team1Id = gameDto.Team1Id,
+            Team2Id = gameDto.Team2Id,
+            GameDate = gameDto.GameDate,
+        };
+
+        _db.Games.Add(game);
+        _db.SaveChanges();
+        
     }
 
     public async Task<GetGameResultDto[]> Get(GetGameDto dto)
@@ -48,4 +79,6 @@ public class GamesRepository : IGamesRepository
             Winner = x.GameResultId.ToString(),
         }).ToArrayAsync();
     }
+
+    
 }
