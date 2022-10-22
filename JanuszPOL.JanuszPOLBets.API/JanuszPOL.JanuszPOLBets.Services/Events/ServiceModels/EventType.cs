@@ -2,6 +2,7 @@
 {
     public enum EventType
     {
+        BaseBet,
         Boolean,
         ExactValue,
         TwoExactValues

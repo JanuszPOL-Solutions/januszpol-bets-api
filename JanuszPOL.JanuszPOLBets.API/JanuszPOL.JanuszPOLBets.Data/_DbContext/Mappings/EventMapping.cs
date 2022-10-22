@@ -29,6 +29,27 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                 new Event
                 {
                     Id = id++,
+                    Name = "Wygrana pierwszej drużyny",
+                    Description = "",
+                    EventTypeId = EventTypeMapping.BaseBetId
+                },
+                new Event
+                {
+                    Id = id++,
+                    Name = "Wygrana drugiej drużyny",
+                    Description = "",
+                    EventTypeId = EventTypeMapping.BaseBetId
+                },
+                new Event
+                {
+                    Id = id++,
+                    Name = "Remis",
+                    Description = "",
+                    EventTypeId = EventTypeMapping.BaseBetId
+                },
+                new Event
+                {
+                    Id = id++,
                     Name = "Wygrana w dogrywce",
                     Description = "Zadecyduj czy mecz zakończy się w doliczonym czasie gry",
                     EventTypeId = EventTypeMapping.BooleanId

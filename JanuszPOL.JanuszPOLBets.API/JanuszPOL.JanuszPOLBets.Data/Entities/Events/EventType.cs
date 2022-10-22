@@ -4,6 +4,7 @@
     {
         public enum RuleType
         {
+            BaseBet,
             Boolean,
             ExactValue,
             TwoExactValues

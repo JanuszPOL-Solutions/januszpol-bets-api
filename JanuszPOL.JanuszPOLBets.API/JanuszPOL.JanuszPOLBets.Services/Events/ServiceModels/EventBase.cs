@@ -14,6 +14,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
         {
             switch(eventType)
             {
+                case Repository.Events.Dto.EventType.BaseBet:
+                    return EventType.BaseBet;
+
                 case Repository.Events.Dto.EventType.Boolean:
                     return EventType.Boolean;
 

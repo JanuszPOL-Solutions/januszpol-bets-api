@@ -13,7 +13,20 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events.Dto
 
         public static EventType TranslateEventType(Entities.EventType eventType)
         {
-            return (EventType)(int)eventType.Type;
+            switch(eventType.Type)
+            {
+                case Entities.EventType.RuleType.BaseBet:
+                    return EventType.BaseBet;
+                case Entities.EventType.RuleType.Boolean:
+                    return EventType.Boolean;
+                case Entities.EventType.RuleType.ExactValue:
+                    return EventType.ExactValue;
+                case Entities.EventType.RuleType.TwoExactValues:
+                    return EventType.TwoExactValues;
+
+                default:
+                    throw new Exception($"Invalid type {eventType.Type}");
+            }
         }
     }
 }
