@@ -9,6 +9,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
     {
         Task<ServiceResult<IList<GetEventsResult>>> GetEvents();
         Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
+        Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
     }
 
     public class EventsService : IEventService
@@ -84,6 +85,37 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                     WinValue = x.WinValue,
                     EventType = GetEventsResult.TranslateEventType(x.EventType)
                 }).ToList());
+        }
+
+        public async Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput)
+        {
+            var betInput = new EventBetInput
+            {
+                AccountId = eventBetInput.AccountId,
+                GameId = eventBetInput.GameId
+            };
+
+            long eventId = 0;
+
+            switch(eventBetInput.BetType)
+            {
+                case BaseBetType.Team1:
+                    eventId = _eventsRepository.Team1WinEventId;
+                    break;
+                case BaseBetType.Team2:
+                    eventId = _eventsRepository.Team2WinEventId;
+                    break;
+                case BaseBetType.Tie:
+                    eventId = _eventsRepository.TieEventId;
+                    break;
+
+                default:
+                    return ServiceResult.WithErrors($"Invalid bet type {eventBetInput.BetType}");
+            }
+
+            betInput.EventId = eventId;
+
+            return await AddEventBet(betInput);
         }
 
         private bool IsEventBetValid(EventBetInput eventBetInput, EventDto eventToBet, out string message)

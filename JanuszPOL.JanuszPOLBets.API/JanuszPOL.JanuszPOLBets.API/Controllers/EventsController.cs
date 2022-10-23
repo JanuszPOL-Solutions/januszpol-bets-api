@@ -39,5 +39,17 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
                 return await _eventService.AddEventBet(eventBetInput);
             });
         }
+
+        [HttpPost("BaseBet")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult>> AddBaseEventBet([FromBody] BaseEventBetInput eventBetInput)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _eventService.AddEventBet(eventBetInput);
+            });
+        }
     }
 }
