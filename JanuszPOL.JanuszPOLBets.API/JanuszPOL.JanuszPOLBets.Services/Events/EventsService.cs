@@ -14,6 +14,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
     public class EventsService : IEventService
     {
         private readonly IEventsRepository _eventsRepository;
+        private const int MaxBetsPerAccountAndGame = 2;
 
         public EventsService(IEventsRepository eventsRepository)
         {
@@ -28,11 +29,40 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 return ServiceResult.WithErrors($"Error when validating the bet, {message}");
             }
 
-            await _eventsRepository.AddEventBet(new AddEventBetDto
+            var existingBets = await _eventsRepository.GetEventBetsForGameAndUser(eventBetInput.GameId, eventBetInput.AccountId);
+            ExistingEventBetDto? editedBet = null;
+
+            if (existingBets != null)
             {
-                AccountId = eventBetInput.AccountId,
-                EventId = eventBetInput.EventId,
-                GameId = eventBetInput.GameId,
+                editedBet = existingBets.SingleOrDefault(x => x.EventId == eventBetInput.EventId);
+
+                // This doesn't consider the distinction between base bets and others now - to be done
+                if (existingBets.Count() >= MaxBetsPerAccountAndGame && editedBet == null)
+                {
+                    return ServiceResult.WithErrors($"User cannot have more than {MaxBetsPerAccountAndGame} bets per game");
+                }
+            }
+
+            if (editedBet == null)
+            {
+                await _eventsRepository.AddEventBet(new AddEventBetDto
+                {
+                    AccountId = eventBetInput.AccountId,
+                    EventId = eventBetInput.EventId,
+                    GameId = eventBetInput.GameId,
+                    Value1 = eventBetInput.Value1,
+                    Value2 = eventBetInput.Value2
+                });
+
+                return ServiceResult.WithSuccess();
+            }
+
+            await _eventsRepository.UpdateEventBet(new ExistingEventBetDto
+            {
+                EventBetId = editedBet.EventBetId,
+                AccountId = editedBet.AccountId,
+                EventId = editedBet.EventId,
+                GameId = editedBet.GameId,
                 Value1 = eventBetInput.Value1,
                 Value2 = eventBetInput.Value2
             });

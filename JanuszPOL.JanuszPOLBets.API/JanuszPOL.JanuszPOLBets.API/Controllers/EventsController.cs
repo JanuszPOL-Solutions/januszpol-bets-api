@@ -28,7 +28,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("Bet")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

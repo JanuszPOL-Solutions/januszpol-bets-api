@@ -11,10 +11,10 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task<IEnumerable<EventDto>> GetEvents();
         Task<EventDto> GetEvent(long eventId);
         Task AddEventBet(AddEventBetDto addEventBetDto);
-
+        Task UpdateEventBet(ExistingEventBetDto updateEventBetDto);
+        Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId);
         // Add event bet result
         // Get event bets results for game
-        // Get event bets results for game and user
     }
 
     public class EventsRepository : IEventsRepository
@@ -50,6 +50,23 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                     .Single(x => x.Id == eventId)));
         }
 
+        public async Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId)
+        {
+            return await Task.FromResult(
+                _dataContext
+                .EventBet
+                .Where(x => x.AccountId == accountId && x.GameId == gameId)
+                ?.Select(x => new ExistingEventBetDto
+                {
+                    EventBetId = x.Id,
+                    AccountId = x.AccountId,
+                    GameId = x.GameId,
+                    EventId = x.EventId,
+                    Value1 = x.Value1,
+                    Value2 = x.Value2
+                }));
+        }
+
         public async Task<IEnumerable<EventDto>> GetEvents()
         {
             return await Task.FromResult(
@@ -58,6 +75,18 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 .Include(x => x.EventType)
                 .Select(TranslateToEventDto)
                 .ToList());
+        }
+
+        public async Task UpdateEventBet(ExistingEventBetDto updateEventBetDto)
+        {
+            var bet = _dataContext.EventBet.Single(x => x.Id == updateEventBetDto.EventBetId);
+            bet.EventId = updateEventBetDto.EventId; ;
+            bet.AccountId = updateEventBetDto.AccountId;
+            bet.GameId = updateEventBetDto.GameId;
+            bet.Value1 = updateEventBetDto.Value1;
+            bet.Value2 = updateEventBetDto.Value2;
+
+            _dataContext.SaveChanges();
         }
 
         private EventDto TranslateToEventDto(Event evt)
