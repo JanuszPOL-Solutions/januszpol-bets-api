@@ -13,6 +13,11 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task AddEventBet(AddEventBetDto addEventBetDto);
         Task UpdateEventBet(ExistingEventBetDto updateEventBetDto);
         Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId);
+        Task<IEnumerable<ExistingEventBetDto>> GetBaseEventBetsForGame(long gameId);
+        Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto);
+        long Team1WinEventId { get; }
+        long Team2WinEventId { get; }
+        long TieEventId { get; }
         // Add event bet result
         // Get event bets results for game
     }
@@ -25,6 +30,11 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         {
             _dataContext = dataContext;
         }
+
+        // Let's just hardcode it here for now, later we should take it from DB
+        public long Team1WinEventId => 1;
+        public long Team2WinEventId => 2;
+        public long TieEventId => 3;
 
         public async Task AddEventBet(AddEventBetDto addEventBetDto)
         {
@@ -56,15 +66,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 _dataContext
                 .EventBet
                 .Where(x => x.AccountId == accountId && x.GameId == gameId)
-                ?.Select(x => new ExistingEventBetDto
-                {
-                    EventBetId = x.Id,
-                    AccountId = x.AccountId,
-                    GameId = x.GameId,
-                    EventId = x.EventId,
-                    Value1 = x.Value1,
-                    Value2 = x.Value2
-                }));
+                ?.Select(TranslateToExistingBetDto));
         }
 
         public async Task<IEnumerable<EventDto>> GetEvents()
@@ -89,6 +91,43 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             _dataContext.SaveChanges();
         }
 
+        public async Task<IEnumerable<ExistingEventBetDto>> GetBaseEventBetsForGame(long gameId)
+        {
+            var bets = _dataContext
+                .EventBet
+                .Where(x => x.EventId == Team1WinEventId ||
+                    x.EventId == Team2WinEventId ||
+                    x.EventId == TieEventId);
+
+            if (bets == null)
+            {
+                return null;
+            }
+
+            return bets.Select(TranslateToExistingBetDto);
+        }
+
+        public async Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto)
+        {
+            var bets = _dataContext
+                .EventBet
+                .Where(x => addEventBetResultDto
+                    .EventBetIds
+                    .Any(y => y == x.Id));
+
+            if (bets == null)
+            {
+                return;
+            }
+
+            foreach(var bet in bets)
+            {
+                bet.Result = true;
+            }
+
+            _dataContext.SaveChanges();
+        }
+
         private EventDto TranslateToEventDto(Event evt)
         {
             return new EventDto
@@ -99,6 +138,19 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 Id = evt.Id,
                 Name = evt.Name,
                 WinValue = evt.WinValue
+            };
+        }
+
+        private ExistingEventBetDto TranslateToExistingBetDto(EventBet eventBet)
+        {
+            return new ExistingEventBetDto
+            {
+                EventBetId = eventBet.Id,
+                AccountId = eventBet.AccountId,
+                GameId = eventBet.GameId,
+                EventId = eventBet.EventId,
+                Value1 = eventBet.Value1,
+                Value2 = eventBet.Value2
             };
         }
     }
