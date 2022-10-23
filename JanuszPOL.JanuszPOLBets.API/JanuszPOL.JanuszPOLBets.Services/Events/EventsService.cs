@@ -167,9 +167,20 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             var baseBets = bets.Where(x => IsBaseBetEventId(x.EventId));
             var baseBestScore = baseBets?.Count(x => x.Result.GetValueOrDefault()) * 3; // 3 shouldn't be hardcoded here
 
+            var nonBaseBets = bets.Where(x => !IsBaseBetEventId(x.EventId));
+
+            int nonBaseBetWinScore = 0, nonBaseBetCost = 0;
+
+            if (nonBaseBets != null)
+            {
+                nonBaseBetCost = nonBaseBets.Sum(x => x.BetCost);
+                nonBaseBetWinScore = nonBaseBets.Where(x => x.Result.GetValueOrDefault()).Sum(x => x.WinValue);
+            }
+
             return ServiceResult<UserScore>.WithSuccess(new UserScore
             {
-                BaseBetsScore = baseBestScore ?? 0
+                BaseBetsScore = baseBestScore ?? 0,
+                NonBaseBetsScore = nonBaseBetWinScore - nonBaseBetCost
             });
         }
 
