@@ -4,6 +4,7 @@ using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221022222340_GameTableAddPhase")]
+    partial class GameTableAddPhase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,24 +103,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "5a7b1396-ca38-4d23-a540-d6b12396fab9",
-                            CreatedAt = new DateTime(2022, 10, 23, 0, 34, 6, 108, DateTimeKind.Utc).AddTicks(2906),
-                            Email = "mymail@mail123fszd.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LastLoginDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            LockoutEnabled = false,
-                            PasswordHash = "123",
-                            PhoneNumberConfirmed = false,
-                            TwoFactorEnabled = false,
-                            UserName = "Testing"
-                        });
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Events.Event", b =>
@@ -163,80 +147,53 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         {
                             Id = 1L,
                             BetCost = 0,
-                            Description = "",
+                            Description = "Zadecyduj czy mecz zakończy się w doliczonym czasie gry",
                             EventTypeId = 1L,
-                            Name = "Wygrana pierwszej drużyny",
-                            WinValue = 3
+                            Name = "Wygrana w dogrywce",
+                            WinValue = 0
                         },
                         new
                         {
                             Id = 2L,
                             BetCost = 0,
-                            Description = "",
+                            Description = "Zadecyduj czy mecz zakończy się doperio po rzutach karnych",
                             EventTypeId = 1L,
-                            Name = "Wygrana drugiej drużyny",
-                            WinValue = 3
+                            Name = "Wygrana w karnych",
+                            WinValue = 0
                         },
                         new
                         {
                             Id = 3L,
                             BetCost = 0,
-                            Description = "",
+                            Description = "Zadecyduj ile co najmniej zostanie pokazanych zółtych kartek",
                             EventTypeId = 1L,
-                            Name = "Remis",
-                            WinValue = 3
+                            Name = "Ilość żółtych kartek (>=)",
+                            WinValue = 0
                         },
                         new
                         {
                             Id = 4L,
                             BetCost = 0,
-                            Description = "Zadecyduj czy mecz zakończy się w doliczonym czasie gry",
+                            Description = "Zadecyduj ile co najmniej padnie bramek",
                             EventTypeId = 2L,
-                            Name = "Wygrana w dogrywce",
+                            Name = "Ilość bramek",
                             WinValue = 0
                         },
                         new
                         {
                             Id = 5L,
                             BetCost = 0,
-                            Description = "Zadecyduj czy mecz zakończy się doperio po rzutach karnych",
-                            EventTypeId = 2L,
-                            Name = "Wygrana w karnych",
+                            Description = "Wytypuj konkretny wynik meczu",
+                            EventTypeId = 3L,
+                            Name = "Dokładny wynik",
                             WinValue = 0
                         },
                         new
                         {
                             Id = 6L,
                             BetCost = 0,
-                            Description = "Zadecyduj ile co najmniej zostanie pokazanych zółtych kartek",
-                            EventTypeId = 2L,
-                            Name = "Ilość żółtych kartek (>=)",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 7L,
-                            BetCost = 0,
-                            Description = "Zadecyduj ile co najmniej padnie bramek",
-                            EventTypeId = 3L,
-                            Name = "Ilość bramek",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 8L,
-                            BetCost = 0,
-                            Description = "Wytypuj konkretny wynik meczu",
-                            EventTypeId = 4L,
-                            Name = "Dokładny wynik",
-                            WinValue = 0
-                        },
-                        new
-                        {
-                            Id = 9L,
-                            BetCost = 0,
                             Description = "Zadecyduj czy bramka padnie do 10 minuty",
-                            EventTypeId = 2L,
+                            EventTypeId = 1L,
                             Name = "Bramka do 10 minuty",
                             WinValue = 0
                         });
@@ -259,8 +216,8 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.Property<long>("GameId")
                         .HasColumnType("bigint");
 
-                    b.Property<bool?>("Result")
-                        .HasColumnType("bit");
+                    b.Property<int?>("Result")
+                        .HasColumnType("int");
 
                     b.Property<int?>("Value1")
                         .HasColumnType("int");
@@ -299,21 +256,16 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         new
                         {
                             Id = 1L,
-                            Type = "BaseBet"
-                        },
-                        new
-                        {
-                            Id = 2L,
                             Type = "Boolean"
                         },
                         new
                         {
-                            Id = 3L,
+                            Id = 2L,
                             Type = "ExactValue"
                         },
                         new
                         {
-                            Id = 4L,
+                            Id = 3L,
                             Type = "TwoExactValues"
                         });
                 });
@@ -332,7 +284,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.Property<int>("GameResultId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PhaseId")
+                    b.Property<int>("GroupPhaseId")
                         .HasColumnType("int");
 
                     b.Property<string>("PhaseName")
@@ -369,16 +321,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasIndex("Team2Id");
 
                     b.ToTable("Games");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            GameDate = new DateTime(2022, 10, 24, 0, 34, 6, 108, DateTimeKind.Utc).AddTicks(7853),
-                            GameResultId = 0,
-                            Team1Id = 1L,
-                            Team2Id = 2L
-                        });
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.GameResult", b =>
@@ -436,36 +378,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Phase", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Phase");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 0,
-                            Name = "Group"
-                        },
-                        new
-                        {
-                            Id = 1,
-                            Name = "Playoffs"
-                        });
-                });
-
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Team", b =>
                 {
                     b.Property<long>("Id")
@@ -489,20 +401,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Teams");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            FlagUrl = "not used now",
-                            Name = "MyTeam1"
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            FlagUrl = "not used now",
-                            Name = "MyTeam2"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<long>", b =>

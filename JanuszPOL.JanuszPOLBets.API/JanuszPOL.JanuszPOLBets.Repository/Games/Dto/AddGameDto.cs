@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JanuszPOL.JanuszPOLBets.Data.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,8 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Games.Dto
         public long Team1Id { get; set; }
         public long Team2Id { get; set; }
         public DateTime GameDate { get; set; }
+        public string PhaseName { get; set; }
+        public Phase.Types PhaseId { get; set; }
+
     }
 }

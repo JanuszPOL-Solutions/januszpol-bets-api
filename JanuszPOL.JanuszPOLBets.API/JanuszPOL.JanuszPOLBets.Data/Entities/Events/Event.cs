@@ -10,4 +10,5 @@
         public long EventTypeId { get; set; }
         public virtual EventType EventType { get; set; }
     }
+
 }

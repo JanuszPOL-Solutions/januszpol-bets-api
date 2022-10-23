@@ -1,5 +1,6 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
+using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ public interface IGamesRepository
     Task<GetGameResultDto[]> GetAll();
     void Add(AddGameDto gameDto);
     void Update(UpdateGameDto updateDto);
+    Task<SingleGameDto> GetGameById(int gameId, long accountId);
 
 }
 public class GamesRepository : IGamesRepository
@@ -43,6 +45,8 @@ public class GamesRepository : IGamesRepository
             Team1Id = gameDto.Team1Id,
             Team2Id = gameDto.Team2Id,
             GameDate = gameDto.GameDate,
+            PhaseId = gameDto.PhaseId,
+            PhaseName = gameDto.PhaseName,
         };
 
         _db.Games.Add(game);
@@ -80,5 +84,53 @@ public class GamesRepository : IGamesRepository
         }).ToArrayAsync();
     }
 
-    
+    private int? GetMatchResult(Event e)
+    {
+        if (e.EventTypeId != 0)
+        {
+            return null;
+        }
+
+        return (int)e.Id;
+    }
+
+    public async Task<SingleGameDto> GetGameById(int gameId, long accountId)
+    {
+        var game = _db.Games.Include(x => x.Team1).Include(x => x.Team2).First(x => x.Id == gameId);
+
+        var listSelectedEvents = _db.EventBet
+            .Where(x => x.GameId == gameId)
+            .Where(x => x.AccountId == accountId)
+            .Select(x => new EventDto 
+                { 
+                    Id = x.Id,
+                    BetCost = x.Event.BetCost,
+                    EventTypeId = x.Event.EventTypeId,
+                    GainedPoints = x.Result == true ? x.Event.WinValue : 0,
+                    MatchResult = x.Event.EventTypeId <= 3 ? x.Event.EventTypeId : null,
+                    Name = x.Event.Name,
+                    Team1Score = x.Value1,
+                    Team2Score = x.Value2
+                }).ToList();
+        
+        var gameDto = new SingleGameDto
+        {
+            Id = game.Id,
+            Team1Name = game.Team1.Name,
+            Team2Name = game.Team2.Name,
+            GameDate = game.GameDate,
+            Team1Score = game.Team1Score,
+            Team2Score = game.Team2Score,
+            Team1ScoreExtraTime = game.Team1ScoreExtraTime,
+            Team2ScoreExtraTime = game.Team2ScoreExtraTime,
+            Team1ScorePenalties = game.Team1ScorePenalties,
+            Team2ScorePenalties = game.Team2ScorePenalties,
+            PhaseName = game.PhaseName,
+            PhaseId = game.PhaseId,
+            GameResultId = game.GameResultId,
+            SelectedEvents = listSelectedEvents,
+        };
+
+        return gameDto;
+    }
 }

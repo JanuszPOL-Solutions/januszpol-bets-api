@@ -4,6 +4,7 @@ using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221023012333_updateGame")]
+    partial class updateGame
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,24 +103,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "5a7b1396-ca38-4d23-a540-d6b12396fab9",
-                            CreatedAt = new DateTime(2022, 10, 23, 0, 34, 6, 108, DateTimeKind.Utc).AddTicks(2906),
-                            Email = "mymail@mail123fszd.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LastLoginDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            LockoutEnabled = false,
-                            PasswordHash = "123",
-                            PhoneNumberConfirmed = false,
-                            TwoFactorEnabled = false,
-                            UserName = "Testing"
-                        });
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Events.Event", b =>
@@ -166,7 +150,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                             Description = "",
                             EventTypeId = 1L,
                             Name = "Wygrana pierwszej drużyny",
-                            WinValue = 3
+                            WinValue = 0
                         },
                         new
                         {
@@ -175,7 +159,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                             Description = "",
                             EventTypeId = 1L,
                             Name = "Wygrana drugiej drużyny",
-                            WinValue = 3
+                            WinValue = 0
                         },
                         new
                         {
@@ -184,7 +168,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                             Description = "",
                             EventTypeId = 1L,
                             Name = "Remis",
-                            WinValue = 3
+                            WinValue = 0
                         },
                         new
                         {
@@ -369,16 +353,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasIndex("Team2Id");
 
                     b.ToTable("Games");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            GameDate = new DateTime(2022, 10, 24, 0, 34, 6, 108, DateTimeKind.Utc).AddTicks(7853),
-                            GameResultId = 0,
-                            Team1Id = 1L,
-                            Team2Id = 2L
-                        });
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.GameResult", b =>
@@ -489,20 +463,6 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Teams");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            FlagUrl = "not used now",
-                            Name = "MyTeam1"
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            FlagUrl = "not used now",
-                            Name = "MyTeam2"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<long>", b =>

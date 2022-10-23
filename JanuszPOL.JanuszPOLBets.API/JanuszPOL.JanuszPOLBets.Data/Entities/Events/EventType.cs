@@ -14,3 +14,5 @@
         public RuleType Type { get; set; }
     }
 }
+
+
