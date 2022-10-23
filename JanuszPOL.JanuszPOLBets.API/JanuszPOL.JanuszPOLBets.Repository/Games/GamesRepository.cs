@@ -61,10 +61,17 @@ public class GamesRepository : IGamesRepository
             .Where(x => string.IsNullOrEmpty(dto.NameStartsWith) || x.Team1.Name.ToLower().StartsWith(dto.NameStartsWith.ToLower()))
             .Select(x => new GetGameResultDto
             {
-                GameId = x.Id,
-                Team1Name = x.Team1.Name,
-                Team2Name = x.Team2.Name,
-                Winner = x.GameResultId.ToString(),
+                Id = x.Id,
+                Team1 = x.Team1.Name,
+                Team2 = x.Team2.Name,
+                Date =x.GameDate,
+                PhaseName = x.PhaseName,
+                Result = (int)x.GameResultId,
+                Team1PenaltyScore = x.Team1ScorePenalties,
+                Team2PenaltyScore = x.Team2ScorePenalties,
+                Team1Score = x.Team1Score,
+                Team2Score = x.Team2Score,
+                Stage = (int)x.PhaseId
             })
             .Skip(dto.Skip)
             .Take(dto.Limit)
@@ -77,10 +84,9 @@ public class GamesRepository : IGamesRepository
     {
         return await _db.Games.Select(x => new GetGameResultDto
         {
-            GameId = x.Id,
-            Team1Name = x.Team1.Name,
-            Team2Name = x.Team2.Name,
-            Winner = x.GameResultId.ToString(),
+            Id = x.Id,
+            Team1= x.Team1.Name,
+            Team2= x.Team2.Name
         }).ToArrayAsync();
     }
 
@@ -116,8 +122,8 @@ public class GamesRepository : IGamesRepository
         var gameDto = new SingleGameDto
         {
             Id = game.Id,
-            Team1Name = game.Team1.Name,
-            Team2Name = game.Team2.Name,
+            Team1 = game.Team1.Name,
+            Team2 = game.Team2.Name,
             GameDate = game.GameDate,
             Team1Score = game.Team1Score,
             Team2Score = game.Team2Score,

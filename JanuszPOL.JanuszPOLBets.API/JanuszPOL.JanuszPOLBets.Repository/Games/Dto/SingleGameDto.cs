@@ -11,8 +11,8 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Games.Dto
     public class SingleGameDto
     {
         public long Id { get; set; }
-        public string Team1Name { get; set; }
-        public string Team2Name { get; set; }
+        public string Team1 { get; set; }
+        public string Team2 { get; set; }
         public DateTime GameDate { get; set; }
         public int? Team1Score { get; set; }
         public int? Team2Score { get; set; }

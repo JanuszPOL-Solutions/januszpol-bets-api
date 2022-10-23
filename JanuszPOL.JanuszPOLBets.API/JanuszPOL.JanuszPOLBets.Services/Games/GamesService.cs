@@ -101,10 +101,17 @@ public class GamesService : IGamesService
         var result = ServiceResult<IList<GetGamesResult>>.WithSuccess(
             games.Select(x => new GetGamesResult
             {
-                GameId = x.GameId,
-                Team1Name = x.Team1Name,
-                Team2Name = x.Team2Name,
-                Winner = x.Winner
+                Id = x.Id,
+                Team1 = x.Team1,
+                Team2= x.Team2,
+                Date = x.Date,
+                Stage = x.Stage,
+                Team2Score = x.Team2Score,
+                Team1Score = x.Team1Score,
+                Team2PenaltyScore = x.Team2PenaltyScore,
+                PhaseName = x.PhaseName,
+                Result = x.Result,
+                Team1PenaltyScore = x.Team1PenaltyScore
             }).ToList()
         );
 
@@ -118,10 +125,9 @@ public class GamesService : IGamesService
         var result = ServiceResult<IList<GetGamesResult>>.WithSuccess(
             games.Select(x => new GetGamesResult
             {
-                GameId = x.GameId,
-                Team1Name = x.Team1Name,
-                Team2Name = x.Team2Name,
-                Winner = x.Winner
+                Id = x.Id,
+                Team1= x.Team1,
+                Team2= x.Team2
             }).ToList()
         );
 
