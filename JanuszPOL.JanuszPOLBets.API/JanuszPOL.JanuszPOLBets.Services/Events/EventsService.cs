@@ -2,6 +2,7 @@
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
+using System.Linq;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Events
 {
@@ -32,6 +33,11 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 return ServiceResult.WithErrors($"Error when validating the bet, {message}");
             }
 
+            if (IsBaseBetEventId(eventBetInput.EventId))
+            {
+                return ServiceResult.WithErrors($"Event bet is based, please use different endpoint");
+            }
+
             var existingBets = await _eventsRepository.GetEventBetsForGameAndUser(eventBetInput.GameId, eventBetInput.AccountId);
             ExistingEventBetDto? editedBet = null;
 
@@ -40,9 +46,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 editedBet = existingBets.SingleOrDefault(x => x.EventId == eventBetInput.EventId);
 
                 var nonBaseBetCount = existingBets
-                    .Where(x => x.EventId != _eventsRepository.Team1WinEventId &&
-                        x.EventId != _eventsRepository.Team2WinEventId &&
-                        x.EventId != _eventsRepository.TieEventId)
+                    .Where(x => !IsBaseBetEventId(x.EventId))
                     .Count();
 
                 if (nonBaseBetCount >= MaxBetsPerAccountAndGame && editedBet == null)
@@ -220,6 +224,13 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 default:
                     throw new Exception($"Invalid bet type {baseBetType}");
             }
+        }
+
+        private bool IsBaseBetEventId(long eventId)
+        {
+            return eventId == _eventsRepository.Team1WinEventId ||
+                        eventId == _eventsRepository.Team2WinEventId ||
+                        eventId == _eventsRepository.TieEventId;
         }
     }
 }
