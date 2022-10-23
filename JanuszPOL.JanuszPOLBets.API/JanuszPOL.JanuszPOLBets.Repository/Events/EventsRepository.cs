@@ -15,11 +15,10 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId);
         Task<IEnumerable<ExistingEventBetDto>> GetBaseEventBetsForGame(long gameId);
         Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto);
+        Task<IEnumerable<EventBetDto>> GetUserBaseBets(long accountId);
         long Team1WinEventId { get; }
         long Team2WinEventId { get; }
         long TieEventId { get; }
-        // Add event bet result
-        // Get event bets results for game
     }
 
     public class EventsRepository : IEventsRepository
@@ -126,6 +125,29 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             }
 
             _dataContext.SaveChanges();
+        }
+
+        public async Task<IEnumerable<EventBetDto>> GetUserBaseBets(long accountId)
+        {
+            var userCorrectBaseBets = _dataContext
+                .EventBet
+                .Where(
+                    x => x.AccountId == accountId && 
+                    (x.EventId == Team1WinEventId ||
+                    x.EventId == Team2WinEventId ||
+                    x.EventId == TieEventId));
+
+            return userCorrectBaseBets == null ?
+                null :
+                userCorrectBaseBets.Select(x => new EventBetDto
+                {
+                    AccountId = x.AccountId,
+                    EventId = x.EventId,
+                    GameId = x.GameId,
+                    Result = x.Result,
+                    Value1 = x.Value1,
+                    Value2 = x.Value2
+                });
         }
 
         private EventDto TranslateToEventDto(Event evt)
