@@ -44,11 +44,35 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult>> AddBaseEventBet([FromBody] BaseEventBetInput eventBetInput)
+        public async Task<ActionResult<ServiceResult>> AddBaseEventBet([FromBody] EventBetInput eventBetInput)
         {
             return await MethodWrapper(async () =>
             {
                 return await _eventService.AddEventBet(eventBetInput);
+            });
+        }
+
+        [HttpPost("BaseBet")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult>> AddBaseEventBet([FromBody] BaseEventBetInput baseEventBetInput)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _eventService.AddBaseEventBet(baseEventBetInput);
+            });
+        }
+
+        [HttpPost("BaseBetResult")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult>> AddBaseEventBetResult([FromBody] BaseEventBetResultInput baseEventBetResultInput)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _eventService.AddBaseEventBetResult(baseEventBetResultInput);
             });
         }
     }

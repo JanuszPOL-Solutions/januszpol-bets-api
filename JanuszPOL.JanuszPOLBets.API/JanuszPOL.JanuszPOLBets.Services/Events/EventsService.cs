@@ -10,6 +10,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
         Task<ServiceResult<IList<GetEventsResult>>> GetEvents();
         Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
+        Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
     }
 
     public class EventsService : IEventService
@@ -123,6 +124,34 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             return await AddEventBet(betInput);
         }
 
+        public async Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput)
+        {
+            var baseBets = await _eventsRepository.GetBaseEventBetsForGame(baseEventBetResultInput.GameId);
+
+            if (baseBets == null)
+            {
+                return ServiceResult.WithSuccess();
+            }
+
+            long eventTypeId = 0;
+            try
+            {
+                eventTypeId = GetBasicBetIdFromType(baseEventBetResultInput.BetType);
+            }
+            catch(Exception e)
+            {
+                ServiceResult.WithErrors($"Error when getting correct bet type, {e}");
+            }
+
+            var correctBetIds = baseBets.Where(x => x.EventId == eventTypeId).Select(x => x.EventBetId);
+            await _eventsRepository.AddEventBetResult(new AddEventBetResultDto
+            {
+                EventBetIds = correctBetIds
+            });
+
+            return ServiceResult.WithSuccess();
+        }
+
         private bool IsEventBetValid(EventBetInput eventBetInput, EventDto eventToBet, out string message)
         {
             message = String.Empty;
@@ -162,6 +191,22 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             }
 
             return true;
+        }
+
+        private long GetBasicBetIdFromType(BaseBetType baseBetType)
+        {
+            switch(baseBetType)
+            {
+                case BaseBetType.Team1:
+                    return _eventsRepository.Team1WinEventId;
+                case BaseBetType.Team2:
+                    return _eventsRepository.Team2WinEventId;
+                case BaseBetType.Tie:
+                    return _eventsRepository.TieEventId;
+
+                default:
+                    throw new Exception($"Invalid bet type {baseBetType}");
+            }
         }
     }
 }
