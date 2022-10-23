@@ -131,6 +131,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
 
         public async Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput)
         {
+            // This method needs to be improved - it needs to check if the result was already placed
+            // and if it did then the results needs to be recalculated
+
             var baseBets = await _eventsRepository.GetBaseEventBetsForGame(baseEventBetResultInput.GameId);
 
             if (baseBets == null)
