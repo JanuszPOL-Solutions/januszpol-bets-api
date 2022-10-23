@@ -37,8 +37,13 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             {
                 editedBet = existingBets.SingleOrDefault(x => x.EventId == eventBetInput.EventId);
 
-                // This doesn't consider the distinction between base bets and others now - to be done
-                if (existingBets.Count() >= MaxBetsPerAccountAndGame && editedBet == null)
+                var nonBaseBetCount = existingBets
+                    .Where(x => x.EventId != _eventsRepository.Team1WinEventId &&
+                        x.EventId != _eventsRepository.Team2WinEventId &&
+                        x.EventId != _eventsRepository.TieEventId)
+                    .Count();
+
+                if (nonBaseBetCount >= MaxBetsPerAccountAndGame && editedBet == null)
                 {
                     return ServiceResult.WithErrors($"User cannot have more than {MaxBetsPerAccountAndGame} bets per game");
                 }
