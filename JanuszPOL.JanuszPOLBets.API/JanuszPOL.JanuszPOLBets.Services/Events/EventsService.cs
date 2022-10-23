@@ -162,13 +162,14 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
 
         public async Task<ServiceResult<UserScore>> GetUserScore(long accountId)
         {
-            var baseBets = await _eventsRepository.GetUserBaseBets(accountId);
+            var bets = await _eventsRepository.GetUserBets(accountId);
 
-            var baseBestScore = baseBets.Count(x => x.Result.GetValueOrDefault()) * 3; // 3 shouldn't be hardcoded here
+            var baseBets = bets.Where(x => IsBaseBetEventId(x.EventId));
+            var baseBestScore = baseBets?.Count(x => x.Result.GetValueOrDefault()) * 3; // 3 shouldn't be hardcoded here
 
             return ServiceResult<UserScore>.WithSuccess(new UserScore
             {
-                BaseBetsScore = baseBestScore
+                BaseBetsScore = baseBestScore ?? 0
             });
         }
 
