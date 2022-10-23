@@ -1,6 +1,7 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Xml.Linq;
 
 namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings;
 
@@ -15,5 +16,19 @@ public class TeamsMapping : IEntityTypeConfiguration<Team>
         builder.HasIndex(x => x.Name).IsUnique();
 
         builder.Property(x => x.FlagUrl).IsRequired(false).HasMaxLength(256);
+
+        builder.HasData(
+            new Team
+            {
+                Id = 1,
+                Name = "MyTeam1",
+                FlagUrl = "not used now"
+            },
+            new Team
+            {
+                Id = 2,
+                Name = "MyTeam2",
+                FlagUrl = "not used now"
+            });
     }
 }

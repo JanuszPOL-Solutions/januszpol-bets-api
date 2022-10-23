@@ -4,6 +4,7 @@ using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221022224803_TestData")]
+    partial class TestData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,8 +109,8 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         {
                             Id = 1L,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "5a7b1396-ca38-4d23-a540-d6b12396fab9",
-                            CreatedAt = new DateTime(2022, 10, 23, 0, 34, 6, 108, DateTimeKind.Utc).AddTicks(2906),
+                            ConcurrencyStamp = "34e4522e-db31-401c-9430-c1227d489d39",
+                            CreatedAt = new DateTime(2022, 10, 22, 22, 48, 3, 147, DateTimeKind.Utc).AddTicks(3119),
                             Email = "mymail@mail123fszd.com",
                             EmailConfirmed = true,
                             IsDeleted = false,
@@ -166,7 +168,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                             Description = "",
                             EventTypeId = 1L,
                             Name = "Wygrana pierwszej drużyny",
-                            WinValue = 3
+                            WinValue = 0
                         },
                         new
                         {
@@ -175,7 +177,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                             Description = "",
                             EventTypeId = 1L,
                             Name = "Wygrana drugiej drużyny",
-                            WinValue = 3
+                            WinValue = 0
                         },
                         new
                         {
@@ -184,7 +186,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                             Description = "",
                             EventTypeId = 1L,
                             Name = "Remis",
-                            WinValue = 3
+                            WinValue = 0
                         },
                         new
                         {
@@ -368,7 +370,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                         new
                         {
                             Id = 1L,
-                            GameDate = new DateTime(2022, 10, 24, 0, 34, 6, 108, DateTimeKind.Utc).AddTicks(7853),
+                            GameDate = new DateTime(2022, 10, 23, 22, 48, 3, 147, DateTimeKind.Utc).AddTicks(7276),
                             GameResultId = 0,
                             Team1Id = 1L,
                             Team2Id = 2L

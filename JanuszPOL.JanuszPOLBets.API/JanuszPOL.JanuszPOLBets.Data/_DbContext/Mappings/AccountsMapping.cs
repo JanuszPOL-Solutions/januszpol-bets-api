@@ -11,5 +11,15 @@ internal class AccountsMapping : IEntityTypeConfiguration<Account>
         builder.Property(x => x.IsDeleted).IsRequired().HasDefaultValue(false);
 
         builder.Property(x => x.CreatedAt).HasComputedColumnSql("GetUtcDate()");
+
+        builder.HasData(new Account
+        { 
+            Id = 1,
+            Email = "mymail@mail123fszd.com",
+            CreatedAt = DateTime.UtcNow,
+            EmailConfirmed = true,
+            PasswordHash = "123",
+            UserName = "Testing"
+        });
     }
 }

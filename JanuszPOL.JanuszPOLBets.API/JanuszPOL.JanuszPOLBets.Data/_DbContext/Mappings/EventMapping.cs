@@ -31,21 +31,27 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                     Id = id++,
                     Name = "Wygrana pierwszej drużyny",
                     Description = "",
-                    EventTypeId = EventTypeMapping.BaseBetId
+                    EventTypeId = EventTypeMapping.BaseBetId,
+                    BetCost = 0,
+                    WinValue = 3
                 },
                 new Event
                 {
                     Id = id++,
                     Name = "Wygrana drugiej drużyny",
                     Description = "",
-                    EventTypeId = EventTypeMapping.BaseBetId
+                    EventTypeId = EventTypeMapping.BaseBetId,
+                    BetCost = 0,
+                    WinValue = 3
                 },
                 new Event
                 {
                     Id = id++,
                     Name = "Remis",
                     Description = "",
-                    EventTypeId = EventTypeMapping.BaseBetId
+                    EventTypeId = EventTypeMapping.BaseBetId,
+                    BetCost = 0,
+                    WinValue = 3
                 },
                 new Event
                 {

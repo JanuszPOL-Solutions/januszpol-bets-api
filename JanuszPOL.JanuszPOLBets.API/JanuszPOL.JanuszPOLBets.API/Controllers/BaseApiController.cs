@@ -21,4 +21,16 @@ public class BaseApiController : ControllerBase
 
         return Ok(result);
     }
+
+    protected async Task<ActionResult<ServiceResult>> MethodWrapper(Func<Task<ServiceResult>> methodInternal)
+    {
+        var result = await methodInternal();
+
+        if (result.IsError)
+        {
+            return BadRequest(result.ErrorsMessage);
+        }
+
+        return Ok(result);
+    }
 }
