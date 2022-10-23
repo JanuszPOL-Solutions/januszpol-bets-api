@@ -27,6 +27,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Games.Dto
         [Range(0, 20)]
         public int? Team2ScorePenalties { get; set; }
         [Required]
+        [Range(0, 6)]
         public GameResult.Values GameResultId { get; set; }
     }
 }

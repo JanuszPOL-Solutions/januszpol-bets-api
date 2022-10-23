@@ -13,7 +13,8 @@ public interface IGamesService
     Task<ServiceResult<IList<GetGamesResult>>> GetAll();
     bool AddGame(AddGameInput gameInput);
     void UpdateGame(UpdateGameInput updateInput);
-   
+    Task<ServiceResult<SingleGameDto>> GetGame(int gameId, long accountId);
+
 
 }
 
@@ -26,6 +27,15 @@ public class GamesService : IGamesService
     {
         _gamesRepository = gamesRepository;
         _teamsRepository = teamsRepository;
+    }
+
+    public async Task<ServiceResult<SingleGameDto>> GetGame(int gameId, long accountId)
+    {
+        var game = await _gamesRepository.GetGameById(gameId, accountId);
+
+        var result = ServiceResult<SingleGameDto>.WithSuccess(game);
+
+        return result;
     }
 
     public void UpdateGame(UpdateGameInput updateInput)
@@ -51,7 +61,14 @@ public class GamesService : IGamesService
         }
         else
         {
-            _gamesRepository.Add(new AddGameDto { Team1Id = gameInput.Team1Id, Team2Id = gameInput.Team2Id, GameDate = gameInput.GameDate });
+            _gamesRepository.Add(new AddGameDto 
+            { 
+                Team1Id = gameInput.Team1Id, 
+                Team2Id = gameInput.Team2Id, 
+                GameDate = gameInput.GameDate,
+                PhaseId = gameInput.PhaseId,
+                PhaseName = gameInput.PhaseName
+            });
             return true;
         }
     }

@@ -4,7 +4,6 @@ public class GameResult
 {
     public Values Id { get; set; }
     public string Name { get; set; }
-
     public enum Values
     {
         Draw = 0,
