@@ -11,6 +11,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
         Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
+        Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     }
 
     public class EventsService : IEventService
@@ -150,6 +151,18 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             });
 
             return ServiceResult.WithSuccess();
+        }
+
+        public async Task<ServiceResult<UserScore>> GetUserScore(long accountId)
+        {
+            var baseBets = await _eventsRepository.GetUserBaseBets(accountId);
+
+            var baseBestScore = baseBets.Count(x => x.Result.GetValueOrDefault()) * 3; // 3 shouldn't be hardcoded here
+
+            return ServiceResult<UserScore>.WithSuccess(new UserScore
+            {
+                BaseBetsScore = baseBestScore
+            });
         }
 
         private bool IsEventBetValid(EventBetInput eventBetInput, EventDto eventToBet, out string message)
