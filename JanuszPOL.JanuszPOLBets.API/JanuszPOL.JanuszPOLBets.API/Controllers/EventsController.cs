@@ -3,6 +3,7 @@ using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
 {
@@ -17,6 +18,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         }
 
         [HttpGet("")]
+        [Description("Method for getting all available event types for bet")]
         [ProducesResponseType(typeof(ServiceResult<IList<GetEventsResult>>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -29,6 +31,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         }
 
         [HttpPost("Bet")]
+        [Description("Method for adding bet for non-base event bet")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -41,6 +44,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         }
 
         [HttpPost("BaseBet")]
+        [Description("Method for adding bet for base event bet")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -53,6 +57,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         }
 
         [HttpPost("BaseBetResult")]
+        [Description("Method for adding result for a base bet")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -61,6 +66,19 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             return await MethodWrapper(async () =>
             {
                 return await _eventService.AddBaseEventBetResult(baseEventBetResultInput);
+            });
+        }
+
+        [HttpPost("EventBetResult")]
+        [Description("Method for adding result for a event bet")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult>> AddEventBetResult([FromBody] EventBetInput baseEventBetResultInput)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _eventService.AddEventBetResult(baseEventBetResultInput);
             });
         }
     }

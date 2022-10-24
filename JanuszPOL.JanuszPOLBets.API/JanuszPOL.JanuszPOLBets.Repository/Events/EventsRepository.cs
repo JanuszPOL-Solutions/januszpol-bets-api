@@ -13,9 +13,9 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task AddEventBet(AddEventBetDto addEventBetDto);
         Task UpdateEventBet(ExistingEventBetDto updateEventBetDto);
         Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId);
-        Task<IEnumerable<ExistingEventBetDto>> GetBaseEventBetsForGame(long gameId);
+        Task<IEnumerable<ExistingEventBetDto>> GetBetsForGame(long gameId);
         Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto);
-        Task<IEnumerable<EventBetDto>> GetUserBaseBets(long accountId);
+        Task<IEnumerable<EventBetResultDto>> GetUserBets(long accountId);
         long Team1WinEventId { get; }
         long Team2WinEventId { get; }
         long TieEventId { get; }
@@ -90,13 +90,11 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             _dataContext.SaveChanges();
         }
 
-        public async Task<IEnumerable<ExistingEventBetDto>> GetBaseEventBetsForGame(long gameId)
+        public async Task<IEnumerable<ExistingEventBetDto>> GetBetsForGame(long gameId)
         {
             var bets = _dataContext
                 .EventBet
-                .Where(x => x.EventId == Team1WinEventId ||
-                    x.EventId == Team2WinEventId ||
-                    x.EventId == TieEventId);
+                .Where(x => x.GameId == gameId);
 
             if (bets == null)
             {
@@ -127,26 +125,25 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             _dataContext.SaveChanges();
         }
 
-        public async Task<IEnumerable<EventBetDto>> GetUserBaseBets(long accountId)
+        public async Task<IEnumerable<EventBetResultDto>> GetUserBets(long accountId)
         {
             var userCorrectBaseBets = _dataContext
                 .EventBet
-                .Where(
-                    x => x.AccountId == accountId && 
-                    (x.EventId == Team1WinEventId ||
-                    x.EventId == Team2WinEventId ||
-                    x.EventId == TieEventId));
+                .Include(x => x.Event)
+                .Where(x => x.AccountId == accountId);
 
             return userCorrectBaseBets == null ?
                 null :
-                userCorrectBaseBets.Select(x => new EventBetDto
+                userCorrectBaseBets.Select(x => new EventBetResultDto
                 {
                     AccountId = x.AccountId,
                     EventId = x.EventId,
                     GameId = x.GameId,
                     Result = x.Result,
                     Value1 = x.Value1,
-                    Value2 = x.Value2
+                    Value2 = x.Value2,
+                    BetCost = x.Event.BetCost,
+                    WinValue = x.Event.WinValue
                 });
         }
 

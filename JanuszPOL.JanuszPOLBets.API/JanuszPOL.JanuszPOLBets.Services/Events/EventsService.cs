@@ -2,6 +2,7 @@
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
+using System.Linq;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Events
 {
@@ -11,6 +12,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
         Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
+        Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput);
         Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     }
 
@@ -40,9 +42,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 editedBet = existingBets.SingleOrDefault(x => x.EventId == eventBetInput.EventId);
 
                 var nonBaseBetCount = existingBets
-                    .Where(x => x.EventId != _eventsRepository.Team1WinEventId &&
-                        x.EventId != _eventsRepository.Team2WinEventId &&
-                        x.EventId != _eventsRepository.TieEventId)
+                    .Where(x => !IsBaseBetEventId(x.EventId))
                     .Count();
 
                 if (nonBaseBetCount >= MaxBetsPerAccountAndGame && editedBet == null)
@@ -127,9 +127,12 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
 
         public async Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput)
         {
-            var baseBets = await _eventsRepository.GetBaseEventBetsForGame(baseEventBetResultInput.GameId);
+            // This method needs to be improved - it needs to check if the result was already placed
+            // and if it did then the results needs to be recalculated
 
-            if (baseBets == null)
+            var bets = await _eventsRepository.GetBetsForGame(baseEventBetResultInput.GameId);
+
+            if (bets == null)
             {
                 return ServiceResult.WithSuccess();
             }
@@ -141,13 +144,13 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             }
             catch(Exception e)
             {
-                ServiceResult.WithErrors($"Error when getting correct bet type, {e}");
+                return ServiceResult.WithErrors($"Error when getting correct bet type, {e}");
             }
 
-            var correctBetIds = baseBets.Where(x => x.EventId == eventTypeId).Select(x => x.EventBetId);
+            var correctBaseBetIds = bets.Where(x => x.EventId == eventTypeId).Select(x => x.EventBetId);
             await _eventsRepository.AddEventBetResult(new AddEventBetResultDto
             {
-                EventBetIds = correctBetIds
+                EventBetIds = correctBaseBetIds
             });
 
             return ServiceResult.WithSuccess();
@@ -155,14 +158,51 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
 
         public async Task<ServiceResult<UserScore>> GetUserScore(long accountId)
         {
-            var baseBets = await _eventsRepository.GetUserBaseBets(accountId);
+            var bets = await _eventsRepository.GetUserBets(accountId);
 
-            var baseBestScore = baseBets.Count(x => x.Result.GetValueOrDefault()) * 3; // 3 shouldn't be hardcoded here
+            var baseBets = bets.Where(x => IsBaseBetEventId(x.EventId));
+            var baseBestScore = baseBets?.Count(x => x.Result.GetValueOrDefault()) * 3; // 3 shouldn't be hardcoded here
+
+            var nonBaseBets = bets.Where(x => !IsBaseBetEventId(x.EventId));
+
+            int nonBaseBetWinScore = 0, nonBaseBetCost = 0;
+
+            if (nonBaseBets != null)
+            {
+                nonBaseBetCost = nonBaseBets.Sum(x => x.BetCost);
+                nonBaseBetWinScore = nonBaseBets.Where(x => x.Result.GetValueOrDefault()).Sum(x => x.WinValue);
+            }
 
             return ServiceResult<UserScore>.WithSuccess(new UserScore
             {
-                BaseBetsScore = baseBestScore
+                BaseBetsScore = baseBestScore ?? 0,
+                NonBaseBetsScore = nonBaseBetWinScore - nonBaseBetCost
             });
+        }
+
+        public async Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput)
+        {
+            if (true)
+            {
+                return ServiceResult.WithErrors("Method not implemented, only base bets are available now");
+            }
+            if (IsBaseBetEventId(eventBetInput.EventId))
+            {
+                return ServiceResult.WithErrors("For base bet results use different endpoint");
+            }
+
+            var bets = await _eventsRepository.GetBetsForGame(eventBetInput.GameId);
+
+            if (bets == null)
+            {
+                return ServiceResult.WithSuccess();
+            }
+
+
+
+            var eventBets = bets.Where(x => x.EventId == eventBetInput.EventId);
+
+            return ServiceResult.WithSuccess();
         }
 
         private bool IsEventBetValid(EventBetInput eventBetInput, EventDto eventToBet, out string message)
@@ -220,6 +260,13 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 default:
                     throw new Exception($"Invalid bet type {baseBetType}");
             }
+        }
+
+        private bool IsBaseBetEventId(long eventId)
+        {
+            return eventId == _eventsRepository.Team1WinEventId ||
+                        eventId == _eventsRepository.Team2WinEventId ||
+                        eventId == _eventsRepository.TieEventId;
         }
     }
 }
