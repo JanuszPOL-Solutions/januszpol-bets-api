@@ -2,6 +2,7 @@
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace JanuszPOL.JanuszPOLBets.Repository.Events
 {
@@ -16,6 +17,8 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task<IEnumerable<ExistingEventBetDto>> GetBetsForGame(long gameId);
         Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto);
         Task<IEnumerable<EventBetResultDto>> GetUserBets(long accountId);
+        Task<ExistingEventBetDto> GetEventBet(long betId);
+        Task DeleteEventBet(long betId);
         long Team1WinEventId { get; }
         long Team2WinEventId { get; }
         long TieEventId { get; }
@@ -64,7 +67,9 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             return await Task.FromResult(
                 _dataContext
                 .EventBet
-                .Where(x => x.AccountId == accountId && x.GameId == gameId)
+                .Include(x => x.Event)
+                .Include(x => x.Event.EventType)
+                .Where(x => x.AccountId == accountId && x.GameId == gameId && !x.IsDeleted)
                 ?.Select(TranslateToExistingBetDto));
         }
 
@@ -80,7 +85,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
 
         public async Task UpdateEventBet(ExistingEventBetDto updateEventBetDto)
         {
-            var bet = _dataContext.EventBet.Single(x => x.Id == updateEventBetDto.EventBetId);
+            var bet = _dataContext.EventBet.Single(x => x.Id == updateEventBetDto.EventBetId && !x.IsDeleted);
             bet.EventId = updateEventBetDto.EventId; ;
             bet.AccountId = updateEventBetDto.AccountId;
             bet.GameId = updateEventBetDto.GameId;
@@ -94,7 +99,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         {
             var bets = _dataContext
                 .EventBet
-                .Where(x => x.GameId == gameId);
+                .Where(x => x.GameId == gameId && !x.IsDeleted);
 
             if (bets == null)
             {
@@ -108,7 +113,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         {
             var bets = _dataContext
                 .EventBet
-                .Where(x => addEventBetResultDto
+                .Where(x => !x.IsDeleted && addEventBetResultDto
                     .EventBetIds
                     .Any(y => y == x.Id));
 
@@ -130,7 +135,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             var userCorrectBaseBets = _dataContext
                 .EventBet
                 .Include(x => x.Event)
-                .Where(x => x.AccountId == accountId);
+                .Where(x => x.AccountId == accountId && !x.IsDeleted);
 
             return userCorrectBaseBets == null ?
                 null :
@@ -145,6 +150,34 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                     BetCost = x.Event.BetCost,
                     WinValue = x.Event.WinValue
                 });
+        }
+
+        public async Task DeleteEventBet(long betId)
+        {
+            var bet = _dataContext.EventBet.Single(x => x.Id == betId);
+
+            if (bet.IsDeleted)
+            {
+                throw new Exception("Event bet already deleted");
+            }
+
+            bet.IsDeleted = true;
+
+            await _dataContext.SaveChangesAsync();
+        }
+
+        public async Task<ExistingEventBetDto> GetEventBet(long betId)
+        {
+            var bet = _dataContext.EventBet.Single(x => x.Id == betId && !x.IsDeleted);
+            return await Task.FromResult(new ExistingEventBetDto
+            {
+                EventId = bet.EventId,
+                AccountId = bet.AccountId,
+                EventBetId = bet.Id,
+                GameId = bet.GameId,
+                Value1 = bet.Value1,
+                Value2 = bet.Value2
+            });
         }
 
         private EventDto TranslateToEventDto(Event evt)
@@ -169,7 +202,10 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 GameId = eventBet.GameId,
                 EventId = eventBet.EventId,
                 Value1 = eventBet.Value1,
-                Value2 = eventBet.Value2
+                Value2 = eventBet.Value2,
+                EventName = eventBet.Event.Name,
+                EventDescription = eventBet.Event.Description,
+                EventType = EventDto.TranslateEventType(eventBet.Event.EventType)
             };
         }
     }
