@@ -12,5 +12,9 @@ public class GetGameResultDto
     public int? Team2PenaltyScore { get; set; }
     public string PhaseName { get; set; }
     public int Stage { get; set; }
-    public int Result { get; set; }
+    public int? Result { get; set; }
+
+    public EventDto ResultEvent { get; set; }
+    public int EventsBetedCount { get; set; }
+
 }
