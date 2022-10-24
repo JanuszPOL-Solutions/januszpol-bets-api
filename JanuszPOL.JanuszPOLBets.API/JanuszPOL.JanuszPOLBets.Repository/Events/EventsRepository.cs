@@ -16,6 +16,15 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task<IEnumerable<ExistingEventBetDto>> GetBaseEventBetsForGame(long gameId);
         Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto);
         Task<IEnumerable<EventBetDto>> GetUserBaseBets(long accountId);
+        Task UpdateEventBase(EventBetDto updateEventBetDto);
+        Task UpdatePenalties(EventBetDto updateEventBetDto);
+        Task UpdateOvertime(EventBetDto updateEventBetDto);
+        Task UpdateAtLeast(EventBetDto updateEventBetDto);
+        Task UpdateExact(EventBetDto updateEventBetDto);
+        Task UpdateScoreUnder(EventBetDto updateEventBetDto);
+
+
+
         long Team1WinEventId { get; }
         long Team2WinEventId { get; }
         long TieEventId { get; }
@@ -86,6 +95,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             bet.GameId = updateEventBetDto.GameId;
             bet.Value1 = updateEventBetDto.Value1;
             bet.Value2 = updateEventBetDto.Value2;
+            bet.Result = updateEventBetDto.Result;
 
             _dataContext.SaveChanges();
         }
@@ -174,6 +184,141 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 Value1 = eventBet.Value1,
                 Value2 = eventBet.Value2
             };
+        }
+
+        public async Task UpdateEventBase(EventBetDto updateEventBetDto)
+        {
+            int[] eventsIds = { 1, 2, 3, 4, 5 };
+            ClearEventResult(eventsIds);
+
+            var eventsToBeUpdated = _dataContext.EventBet.Where(x => x.EventId == updateEventBetDto.EventId).Where(x => x.GameId == updateEventBetDto.GameId).ToList();
+
+            eventsToBeUpdated.ForEach(x => x.Result = true);
+            
+            _dataContext.SaveChanges();
+        }
+        public async Task UpdatePenalties(EventBetDto updateEventBetDto)
+        {
+            int[] eventsIds = { 4, 5 };
+            ClearEventResult(eventsIds);
+
+            var listUsersId = _dataContext.Users.Select(x => x.Id).ToListAsync();
+
+            foreach (var userId in await listUsersId)
+            {
+                var eventsToBeUpdated = await _dataContext.EventBet
+                        .Where(x => x.EventId == updateEventBetDto.EventId)
+                        .Where(x => x.GameId == updateEventBetDto.GameId)
+                        .Where(x => x.AccountId == userId)
+                        .ToListAsync();
+
+                var userBetCorrect = _dataContext.EventBet
+                    .Where(x => x.GameId == updateEventBetDto.GameId)
+                    .Where(x => x.AccountId == userId)
+                    .Where(x => x.EventId == 1 || x.EventId == 2)
+                    .Any(x => x.Result == true);
+
+                if (userBetCorrect)
+                {
+                    eventsToBeUpdated.ForEach(x => x.Result = true);
+                }
+                else
+                {
+                    eventsToBeUpdated.ForEach(x => x.Result = false);
+                }
+                _dataContext.SaveChanges();
+            }
+        }
+        public async Task UpdateOvertime(EventBetDto updateEventBetDto)
+        {
+            int[] eventsIds = { 4, 5 };
+            ClearEventResult(eventsIds);
+
+            var listUsersId = _dataContext.Users.Select(x => x.Id).ToListAsync();
+
+            foreach(var userId in await listUsersId)
+            {
+                var eventsToBeUpdated = await _dataContext.EventBet
+                        .Where(x => x.EventId == updateEventBetDto.EventId)
+                        .Where(x => x.GameId == updateEventBetDto.GameId)
+                        .Where(x => x.AccountId == userId)
+                        .ToListAsync();
+
+                var userBetCorrect = _dataContext.EventBet
+                    .Where(x => x.GameId == updateEventBetDto.GameId)
+                    .Where(x => x.AccountId == userId)
+                    .Where(x => x.EventId == 1 || x.EventId == 2)
+                    .Any(x => x.Result == true);
+
+                if (userBetCorrect)
+                {
+                    eventsToBeUpdated.ForEach(x => x.Result = true);
+                }
+                else
+                {
+                    eventsToBeUpdated.ForEach(x => x.Result = false);
+                }
+                _dataContext.SaveChanges();
+            }
+        }
+
+        public async Task UpdateAtLeast(EventBetDto updateEventBetDto)
+        {
+            var eventsToBeUpdated = _dataContext.EventBet.Where(x => x.EventId == updateEventBetDto.EventId).Where(x => x.GameId == updateEventBetDto.GameId).ToList();
+
+            foreach (var ev in eventsToBeUpdated)
+            {
+                if (ev.Value1 >= updateEventBetDto.Value1)
+                {
+                    ev.Result = true;
+                    _dataContext.SaveChanges();
+                }
+                else
+                {
+                    ev.Result = false;
+                    _dataContext.SaveChanges();
+                }
+            }
+        }
+
+        public async Task UpdateExact(EventBetDto updateEventBetDto)
+        {
+            var eventsToBeUpdated = _dataContext.EventBet.Where(x => x.EventId == updateEventBetDto.EventId).Where(x => x.GameId == updateEventBetDto.GameId).ToList();
+
+            foreach (var ev in eventsToBeUpdated)
+            {
+                if (ev.Value1 == updateEventBetDto.Value1 && ev.Value2 == updateEventBetDto.Value2)
+                {
+                    ev.Result = true;
+                    _dataContext.SaveChanges();
+                }
+                else
+                {
+                    ev.Result = false;
+                    _dataContext.SaveChanges();
+                }
+            }
+        }
+
+        public async Task UpdateScoreUnder(EventBetDto updateEventBetDto)
+        {
+            var eventsToBeUpdated = _dataContext.EventBet.Where(x => x.EventId == updateEventBetDto.EventId).Where(x => x.GameId == updateEventBetDto.GameId).ToList();
+
+            foreach (var ev in eventsToBeUpdated)
+            {
+                    ev.Result = true;
+                    _dataContext.SaveChanges();
+            }
+        }
+
+        private void ClearEventResult(int[] eventIds)
+        {
+            foreach(int i in eventIds)
+            {
+                var eventsToClear = _dataContext.EventBet.Where(x => x.EventId == i).ToList();
+                eventsToClear.ForEach(x => x.Result = false);
+                _dataContext.SaveChanges();
+            }
         }
     }
 }

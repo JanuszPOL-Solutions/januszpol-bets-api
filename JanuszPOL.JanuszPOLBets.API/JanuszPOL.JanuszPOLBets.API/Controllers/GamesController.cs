@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers;
 
+[AllowAnonymous]
 public class GamesController : BaseApiController
    
 {

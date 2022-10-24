@@ -12,6 +12,14 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
         Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
         Task<ServiceResult<UserScore>> GetUserScore(long accountId);
+        Task UpdateEventBaseBet(UpdateEventBetInput updateEventBetInput);
+        Task UpdateEventPenalties(UpdateEventBetInput updateEventBetInput);
+        Task UpdateEventOvertime(UpdateEventBetInput updateEventBetInput);
+        Task UpdateEventAtLeast(UpdateEventBetInput updateEventBetInput);
+        Task UpdateEventExact(UpdateEventBetInput updateEventBetInput);
+        Task UpdateEventScoreUnder(UpdateEventBetInput updateEventBetInput);
+
+
     }
 
     public class EventsService : IEventService
@@ -220,6 +228,70 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 default:
                     throw new Exception($"Invalid bet type {baseBetType}");
             }
+        }
+
+        public async Task UpdateEventBaseBet(UpdateEventBetInput updateEventBetInput)
+        {
+            var updateEventBet = new EventBetDto
+            {
+                GameId = updateEventBetInput.GameId,
+                EventId = updateEventBetInput.EventId,
+                
+            };
+            await _eventsRepository.UpdateEventBase(updateEventBet);
+        }
+        public async Task UpdateEventPenalties(UpdateEventBetInput updateEventBetInput)
+        {
+            var updateEventBet = new EventBetDto
+            {
+                GameId = updateEventBetInput.GameId,
+                EventId = updateEventBetInput.EventId,
+
+            };
+            await _eventsRepository.UpdatePenalties(updateEventBet);
+        }
+        public async Task UpdateEventOvertime(UpdateEventBetInput updateEventBetInput)
+        {
+            var updateEventBet = new EventBetDto
+            {
+                GameId = updateEventBetInput.GameId,
+                EventId = updateEventBetInput.EventId,
+
+            };
+            await _eventsRepository.UpdateOvertime(updateEventBet);
+        }
+
+        public async Task UpdateEventAtLeast(UpdateEventBetInput updateEventBetInput)
+        {
+            var updateEventBet = new EventBetDto
+            {
+                GameId = updateEventBetInput.GameId,
+                EventId = updateEventBetInput.EventId,
+                Value1 = updateEventBetInput.Score1
+            };
+            await _eventsRepository.UpdateAtLeast(updateEventBet);
+        }
+
+        public async Task UpdateEventExact(UpdateEventBetInput updateEventBetInput)
+        {
+            var updateEventBet = new EventBetDto
+            {
+                GameId = updateEventBetInput.GameId,
+                EventId = updateEventBetInput.EventId,
+                Value1 = updateEventBetInput.Score1,
+                Value2 = updateEventBetInput.Score2,
+            };
+            await _eventsRepository.UpdateExact(updateEventBet);
+        }
+
+        public async Task UpdateEventScoreUnder(UpdateEventBetInput updateEventBetInput)
+        {
+            var updateEventBet = new EventBetDto
+            {
+                GameId = updateEventBetInput.GameId,
+                EventId = updateEventBetInput.EventId
+            };
+            await _eventsRepository.UpdateScoreUnder(updateEventBet);
         }
     }
 }

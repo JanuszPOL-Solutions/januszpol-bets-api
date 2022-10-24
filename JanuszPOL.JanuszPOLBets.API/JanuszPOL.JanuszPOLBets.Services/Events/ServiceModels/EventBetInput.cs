@@ -1,4 +1,6 @@
-﻿namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
 {
     public class EventBetInput
     {
