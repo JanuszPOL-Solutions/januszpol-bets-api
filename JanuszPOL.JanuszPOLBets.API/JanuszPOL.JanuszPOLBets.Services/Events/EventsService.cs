@@ -34,11 +34,6 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 return ServiceResult.WithErrors($"Error when validating the bet, {message}");
             }
 
-            if (IsBaseBetEventId(eventBetInput.EventId))
-            {
-                return ServiceResult.WithErrors($"Event bet is based, please use different endpoint");
-            }
-
             var existingBets = await _eventsRepository.GetEventBetsForGameAndUser(eventBetInput.GameId, eventBetInput.AccountId);
             ExistingEventBetDto? editedBet = null;
 
