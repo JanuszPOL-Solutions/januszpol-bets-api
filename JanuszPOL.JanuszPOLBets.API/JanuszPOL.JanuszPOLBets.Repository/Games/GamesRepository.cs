@@ -71,7 +71,8 @@ public class GamesRepository : IGamesRepository
                 Team2PenaltyScore = x.Team2ScorePenalties,
                 Team1Score = x.Team1Score,
                 Team2Score = x.Team2Score,
-                Stage = (int)x.PhaseId
+                Stage = (int)x.PhaseId,
+                //TODO: add user context to get events count and result event
             })
             .Skip(dto.Skip)
             .Take(dto.Limit)
@@ -90,16 +91,6 @@ public class GamesRepository : IGamesRepository
         }).ToArrayAsync();
     }
 
-    private int? GetMatchResult(Event e)
-    {
-        if (e.EventTypeId != 0)
-        {
-            return null;
-        }
-
-        return (int)e.Id;
-    }
-
     public async Task<SingleGameDto> GetGameById(int gameId, long accountId)
     {
         var game = _db.Games.Include(x => x.Team1).Include(x => x.Team2).First(x => x.Id == gameId);
@@ -113,12 +104,24 @@ public class GamesRepository : IGamesRepository
                     BetCost = x.Event.BetCost,
                     EventTypeId = x.Event.EventTypeId,
                     GainedPoints = x.Result == true ? x.Event.WinValue : 0,
-                    MatchResult = x.Event.EventTypeId <= 3 ? x.Event.EventTypeId : null,
                     Name = x.Event.Name,
                     Team1Score = x.Value1,
                     Team2Score = x.Value2
                 }).ToList();
-        
+
+        var resultEvent = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == (int)EventType.RuleType.BaseBet);
+        if (resultEvent != null) //tmp
+        {
+            resultEvent.MatchResult = resultEvent.Id;
+        }
+
+        var exactScoreEvent = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == (int)EventType.RuleType.TwoExactValues);
+
+        listSelectedEvents = listSelectedEvents
+            .Where(x => x.EventTypeId != (int)EventType.RuleType.BaseBet)
+            .Where(x => x.EventTypeId != (int)EventType.RuleType.TwoExactValues) //tmp
+            .ToList();
+
         var gameDto = new SingleGameDto
         {
             Id = game.Id,
@@ -134,7 +137,10 @@ public class GamesRepository : IGamesRepository
             PhaseName = game.PhaseName,
             PhaseId = game.PhaseId,
             GameResultId = game.GameResultId,
+            ExactScoreEvent = exactScoreEvent,
+            ResultEvent = resultEvent,
             SelectedEvents = listSelectedEvents,
+            Started = DateTime.Now > game.GameDate
         };
 
         return gameDto;

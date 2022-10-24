@@ -14,7 +14,7 @@ public class Game
     public int? Team2ScorePenalties { get; set; }
     public string PhaseName { get; set; }
     public Phase.Types PhaseId { get; set; }
-    public GameResult.Values GameResultId { get; set; }
+    public GameResult.Values? GameResultId { get; set; }
 
     public Team Team1 { get; set; }
     public Team Team2 { get; set; }
