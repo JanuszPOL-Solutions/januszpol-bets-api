@@ -12,6 +12,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
         Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
+        Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput);
         Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     }
 
@@ -134,9 +135,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             // This method needs to be improved - it needs to check if the result was already placed
             // and if it did then the results needs to be recalculated
 
-            var baseBets = await _eventsRepository.GetBaseEventBetsForGame(baseEventBetResultInput.GameId);
+            var bets = await _eventsRepository.GetBetsForGame(baseEventBetResultInput.GameId);
 
-            if (baseBets == null)
+            if (bets == null)
             {
                 return ServiceResult.WithSuccess();
             }
@@ -148,13 +149,13 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             }
             catch(Exception e)
             {
-                ServiceResult.WithErrors($"Error when getting correct bet type, {e}");
+                return ServiceResult.WithErrors($"Error when getting correct bet type, {e}");
             }
 
-            var correctBetIds = baseBets.Where(x => x.EventId == eventTypeId).Select(x => x.EventBetId);
+            var correctBaseBetIds = bets.Where(x => x.EventId == eventTypeId).Select(x => x.EventBetId);
             await _eventsRepository.AddEventBetResult(new AddEventBetResultDto
             {
-                EventBetIds = correctBetIds
+                EventBetIds = correctBaseBetIds
             });
 
             return ServiceResult.WithSuccess();
@@ -182,6 +183,31 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
                 BaseBetsScore = baseBestScore ?? 0,
                 NonBaseBetsScore = nonBaseBetWinScore - nonBaseBetCost
             });
+        }
+
+        public async Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput)
+        {
+            if (true)
+            {
+                return ServiceResult.WithErrors("Method not implemented, only base bets are available now");
+            }
+            if (IsBaseBetEventId(eventBetInput.EventId))
+            {
+                return ServiceResult.WithErrors("For base bet results use different endpoint");
+            }
+
+            var bets = await _eventsRepository.GetBetsForGame(eventBetInput.GameId);
+
+            if (bets == null)
+            {
+                return ServiceResult.WithSuccess();
+            }
+
+
+
+            var eventBets = bets.Where(x => x.EventId == eventBetInput.EventId);
+
+            return ServiceResult.WithSuccess();
         }
 
         private bool IsEventBetValid(EventBetInput eventBetInput, EventDto eventToBet, out string message)
