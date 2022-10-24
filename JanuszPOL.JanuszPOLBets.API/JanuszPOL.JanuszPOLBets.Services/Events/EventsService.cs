@@ -13,7 +13,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
         Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
         Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
         Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput);
+        Task<ServiceResult> DeleteEventBet(long betId);
         Task<ServiceResult<UserScore>> GetUserScore(long accountId);
+        Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId);
     }
 
     public class EventsService : IEventService
@@ -104,7 +106,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
 
             long eventId = 0;
 
-            switch(eventBetInput.BetType)
+            switch (eventBetInput.BetType)
             {
                 case BaseBetType.Team1:
                     eventId = _eventsRepository.Team1WinEventId;
@@ -142,7 +144,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             {
                 eventTypeId = GetBasicBetIdFromType(baseEventBetResultInput.BetType);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return ServiceResult.WithErrors($"Error when getting correct bet type, {e}");
             }
@@ -205,11 +207,54 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
             return ServiceResult.WithSuccess();
         }
 
+        public async Task<ServiceResult> DeleteEventBet(long betId)
+        {
+            var existingBet = await _eventsRepository.GetEventBet(betId);
+
+            if (IsBaseBetEventId(existingBet.EventId))
+            {
+                return ServiceResult.WithErrors("Base bets cannot be deleted");
+            }
+
+            try
+            {
+                await _eventsRepository.DeleteEventBet(betId);
+            }
+            catch (Exception e)
+            {
+                return ServiceResult.WithErrors($"Error when deleting event bet, {e}");
+            }
+
+            return ServiceResult.WithSuccess();
+        }
+
+        public async Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId)
+        {
+            var bets = await _eventsRepository.GetEventBetsForGameAndUser(gameId, accountId);
+
+            if (bets == null)
+            {
+                return ServiceResult<IEnumerable<EventBet>>.WithSuccess(new List<EventBet>());
+            }
+
+            return ServiceResult<IEnumerable<EventBet>>.WithSuccess(bets.Select(x => new EventBet
+            {
+                AccountId = accountId,
+                GameId = gameId,
+                BetId = x.EventBetId,
+                Description = x.EventDescription,
+                Name = x.EventName,
+                EventType = GetEventsResult.TranslateEventType(x.EventType),
+                Value1 = x.Value1,
+                Value2 = x.Value2
+            }));
+        }
+
         private bool IsEventBetValid(EventBetInput eventBetInput, EventDto eventToBet, out string message)
         {
             message = String.Empty;
 
-            if (eventToBet.EventType == Repository.Events.Dto.EventType.Boolean || 
+            if (eventToBet.EventType == Repository.Events.Dto.EventType.Boolean ||
                 eventToBet.EventType == Repository.Events.Dto.EventType.BaseBet)
             {
                 if (eventBetInput.Value1.HasValue || eventBetInput.Value2.HasValue)
@@ -248,7 +293,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events
 
         private long GetBasicBetIdFromType(BaseBetType baseBetType)
         {
-            switch(baseBetType)
+            switch (baseBetType)
             {
                 case BaseBetType.Team1:
                     return _eventsRepository.Team1WinEventId;

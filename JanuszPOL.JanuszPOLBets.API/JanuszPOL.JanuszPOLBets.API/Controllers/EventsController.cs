@@ -81,5 +81,31 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
                 return await _eventService.AddEventBetResult(baseEventBetResultInput);
             });
         }
+
+        [HttpDelete("EventBet")]
+        [Description("Method for deleting an event bet")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult>> DeleteEventBet(long betId)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _eventService.DeleteEventBet(betId);
+            });
+        }
+
+        [HttpGet("EventBetsAccountGame")]
+        [Description("Method for get best for account and game")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult<IEnumerable<EventBet>>>> GetEventBets(long accountId, long gameId)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _eventService.GetUserBetsForGame(accountId, gameId);
+            });
+        }
     }
 }

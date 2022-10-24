@@ -3,5 +3,8 @@
     public class ExistingEventBetDto : AddEventBetDto
     {
         public long EventBetId { get; set; }
+        public string EventName { get; set; }
+        public string EventDescription { get; set; }
+        public EventType EventType { get; set; }    
     }
 }
