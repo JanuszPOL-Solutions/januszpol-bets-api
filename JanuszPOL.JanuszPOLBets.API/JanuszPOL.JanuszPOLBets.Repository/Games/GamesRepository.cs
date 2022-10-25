@@ -99,7 +99,7 @@ public class GamesRepository : IGamesRepository
                 Phase = (int)x.PhaseId,
                 ResultEventBet = x.EventBets
                     .Where(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
-                    .Select(x => x.Id)
+                    .Select(x => x.EventId)
                     .FirstOrDefault(),
                 EventsBetedCount = x.EventBets
                     .Count(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId != (int)EventType.RuleType.BaseBet)

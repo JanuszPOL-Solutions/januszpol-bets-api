@@ -15,8 +15,6 @@ public class GamesMapping : IEntityTypeConfiguration<Game>
         builder.HasOne(x => x.Team1).WithMany().HasForeignKey(x => x.Team1Id).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.Team2).WithMany().HasForeignKey(x => x.Team2Id).OnDelete(DeleteBehavior.Restrict);
 
-        //builder.HasMany(x => x.EventBets).WithOne(x => x.Game).HasForeignKey(x => x.GameId);
-
         builder.HasData(new Game
         {
             Team1Id = 1,
