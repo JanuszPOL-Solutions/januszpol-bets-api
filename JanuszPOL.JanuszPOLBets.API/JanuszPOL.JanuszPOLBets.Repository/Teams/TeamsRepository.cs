@@ -36,6 +36,7 @@ public class TeamsRepository : ITeamsRepository
 
         return teams;
     }
+
     public bool Exists(long id)
     {
         return _db.Teams.Any(x => x.Id == id);

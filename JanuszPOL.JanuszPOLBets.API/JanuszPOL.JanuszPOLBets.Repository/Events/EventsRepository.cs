@@ -2,7 +2,6 @@
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace JanuszPOL.JanuszPOLBets.Repository.Events
 {
@@ -40,7 +39,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
 
         public async Task AddEventBet(AddEventBetDto addEventBetDto)
         {
-            var evt = _dataContext.EventBet.Add(new EventBet
+            _dataContext.EventBet.Add(new EventBet
             {
                 AccountId = addEventBetDto.AccountId,
                 EventId = addEventBetDto.EventId,
@@ -49,43 +48,44 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 Value2 = addEventBetDto.Value2
             });
 
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
         }
 
         public async Task<EventDto> GetEvent(long eventId)
         {
-            return await Task.FromResult(
-                TranslateToEventDto(
-                    _dataContext
-                    .Event
-                    .Include(x => x.EventType)
-                    .Single(x => x.Id == eventId)));
+            var @event = await _dataContext.Event
+                .Select(x => TranslateToEventDto(x))
+                .SingleAsync();
+
+            return @event;
         }
 
         public async Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId)
         {
-            return await Task.FromResult(
-                _dataContext
-                .EventBet
+            var bets = await _dataContext.EventBet
                 .Include(x => x.Event)
                 .Include(x => x.Event.EventType)
                 .Where(x => x.AccountId == accountId && x.GameId == gameId && !x.IsDeleted)
-                ?.Select(TranslateToExistingBetDto));
+                .Select(x => TranslateToExistingBetDto(x))
+                .ToListAsync();
+
+            return bets;
         }
 
         public async Task<IEnumerable<EventDto>> GetEvents()
         {
-            return await Task.FromResult(
-                _dataContext
-                .Event
-                .Include(x => x.EventType)
-                .Select(TranslateToEventDto)
-                .ToList());
+            var events = await _dataContext.Event
+                .Select(x => TranslateToEventDto(x))
+                .ToListAsync();
+
+            return events;
         }
 
         public async Task UpdateEventBet(ExistingEventBetDto updateEventBetDto)
         {
-            var bet = _dataContext.EventBet.Single(x => x.Id == updateEventBetDto.EventBetId && !x.IsDeleted);
+            var bet = await _dataContext.EventBet
+                .SingleAsync(x => x.Id == updateEventBetDto.EventBetId && !x.IsDeleted);
+
             bet.EventId = updateEventBetDto.EventId; ;
             bet.AccountId = updateEventBetDto.AccountId;
             bet.GameId = updateEventBetDto.GameId;
@@ -97,49 +97,40 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
 
         public async Task<IEnumerable<ExistingEventBetDto>> GetBetsForGame(long gameId)
         {
-            var bets = _dataContext
-                .EventBet
-                .Where(x => x.GameId == gameId && !x.IsDeleted);
+            var bets = await _dataContext.EventBet
+                .Where(x => x.GameId == gameId && !x.IsDeleted)
+                .Select(x => TranslateToExistingBetDto(x))
+                .ToListAsync();
 
-            if (bets == null)
-            {
-                return null;
-            }
-
-            return bets.Select(TranslateToExistingBetDto);
+            return bets;
         }
 
         public async Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto)
         {
-            var bets = _dataContext
-                .EventBet
-                .Where(x => !x.IsDeleted && addEventBetResultDto
-                    .EventBetIds
-                    .Any(y => y == x.Id));
+            var bets = await _dataContext.EventBet
+                .Include(x => x.Event)
+                .Where(x => !x.IsDeleted && addEventBetResultDto.EventBetIds.Contains(x.Id))
+                .ToListAsync();
 
             if (bets == null)
             {
                 return;
             }
 
-            foreach(var bet in bets)
+            foreach (var bet in bets)
             {
                 bet.Result = true;
             }
 
-            _dataContext.SaveChanges();
+            await _dataContext.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<EventBetResultDto>> GetUserBets(long accountId)
         {
-            var userCorrectBaseBets = _dataContext
+            var userCorrectBaseBets = await _dataContext
                 .EventBet
-                .Include(x => x.Event)
-                .Where(x => x.AccountId == accountId && !x.IsDeleted);
-
-            return userCorrectBaseBets == null ?
-                null :
-                userCorrectBaseBets.Select(x => new EventBetResultDto
+                .Where(x => x.AccountId == accountId && !x.IsDeleted)
+                .Select(x => new EventBetResultDto
                 {
                     AccountId = x.AccountId,
                     EventId = x.EventId,
@@ -149,12 +140,15 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                     Value2 = x.Value2,
                     BetCost = x.Event.BetCost,
                     WinValue = x.Event.WinValue
-                });
+                })
+                .ToListAsync();
+
+            return userCorrectBaseBets;
         }
 
         public async Task DeleteEventBet(long betId)
         {
-            var bet = _dataContext.EventBet.Single(x => x.Id == betId);
+            var bet = await _dataContext.EventBet.SingleAsync(x => x.Id == betId);
 
             if (bet.IsDeleted)
             {
@@ -168,16 +162,21 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
 
         public async Task<ExistingEventBetDto> GetEventBet(long betId)
         {
-            var bet = _dataContext.EventBet.Single(x => x.Id == betId && !x.IsDeleted);
-            return await Task.FromResult(new ExistingEventBetDto
-            {
-                EventId = bet.EventId,
-                AccountId = bet.AccountId,
-                EventBetId = bet.Id,
-                GameId = bet.GameId,
-                Value1 = bet.Value1,
-                Value2 = bet.Value2
-            });
+            var bet = await _dataContext
+                .EventBet
+                .Where(x => x.Id == betId && !x.IsDeleted)
+                .Select(x => new ExistingEventBetDto
+                {
+                    EventId = x.EventId,
+                    AccountId = x.AccountId,
+                    EventBetId = x.Id,
+                    GameId = x.GameId,
+                    Value1 = x.Value1,
+                    Value2 = x.Value2
+                })
+                .SingleAsync();
+
+            return bet;
         }
 
         private EventDto TranslateToEventDto(Event evt)

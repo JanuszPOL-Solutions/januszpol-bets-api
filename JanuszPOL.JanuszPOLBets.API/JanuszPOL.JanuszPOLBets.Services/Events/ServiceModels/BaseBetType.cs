@@ -2,8 +2,8 @@
 {
     public enum BaseBetType
     {
-        Team1,
-        Team2,
-        Tie
+        Team1 = 1,
+        Team2 = 2,
+        Tie = 3
     }
 }

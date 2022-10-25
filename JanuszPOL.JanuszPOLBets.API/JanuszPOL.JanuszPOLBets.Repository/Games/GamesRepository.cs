@@ -13,8 +13,8 @@ public interface IGamesRepository
     void Add(AddGameDto gameDto);
     void Update(UpdateGameDto updateDto);
     Task<SingleGameDto> GetGameById(int gameId, long accountId);
-
 }
+
 public class GamesRepository : IGamesRepository
 {
     private readonly DataContext _db;
@@ -27,6 +27,7 @@ public class GamesRepository : IGamesRepository
     public void Update(UpdateGameDto updateDto)
     {
         var game = _db.Games.First(x => x.Id == updateDto.Id);
+
         game.Team1Score = updateDto.Team1Score;
         game.Team2Score = updateDto.Team2Score;
         game.Team1ScoreExtraTime = updateDto.Team1ScoreExtraTime;
@@ -34,12 +35,13 @@ public class GamesRepository : IGamesRepository
         game.Team1ScorePenalties = updateDto.Team1ScorePenalties;
         game.Team2ScorePenalties = updateDto.Team2ScorePenalties;
         game.GameResultId = updateDto.GameResultId;
+
         _db.SaveChanges();
-        
+
     }
+
     public void Add(AddGameDto gameDto)
     {
-
         var game = new Game
         {
             Team1Id = gameDto.Team1Id,
@@ -51,7 +53,6 @@ public class GamesRepository : IGamesRepository
 
         _db.Games.Add(game);
         _db.SaveChanges();
-        
     }
 
     public async Task<GetGameResultDto[]> Get(GetGameDto dto)
@@ -64,9 +65,9 @@ public class GamesRepository : IGamesRepository
                 Id = x.Id,
                 Team1 = x.Team1.Name,
                 Team2 = x.Team2.Name,
-                Date =x.GameDate,
+                Date = x.GameDate,
                 PhaseName = x.PhaseName,
-                Result = (int)x.GameResultId,
+                Result = (int?)x.GameResultId,
                 Team1PenaltyScore = x.Team1ScorePenalties,
                 Team2PenaltyScore = x.Team2ScorePenalties,
                 Team1Score = x.Team1Score,
@@ -86,28 +87,31 @@ public class GamesRepository : IGamesRepository
         return await _db.Games.Select(x => new GetGameResultDto
         {
             Id = x.Id,
-            Team1= x.Team1.Name,
-            Team2= x.Team2.Name
+            Team1 = x.Team1.Name,
+            Team2 = x.Team2.Name
         }).ToArrayAsync();
     }
 
     public async Task<SingleGameDto> GetGameById(int gameId, long accountId)
     {
-        var game = _db.Games.Include(x => x.Team1).Include(x => x.Team2).First(x => x.Id == gameId);
+        var game = await _db.Games
+            .Include(x => x.Team1)
+            .Include(x => x.Team2)
+            .FirstAsync(x => x.Id == gameId);
 
-        var listSelectedEvents = _db.EventBet
+        var listSelectedEvents = await _db.EventBet
             .Where(x => x.GameId == gameId)
             .Where(x => x.AccountId == accountId)
-            .Select(x => new EventDto 
-                { 
-                    Id = x.Id,
-                    BetCost = x.Event.BetCost,
-                    EventTypeId = x.Event.EventTypeId,
-                    GainedPoints = x.Result == true ? x.Event.WinValue : 0,
-                    Name = x.Event.Name,
-                    Team1Score = x.Value1,
-                    Team2Score = x.Value2
-                }).ToList();
+            .Select(x => new EventDto
+            {
+                Id = x.Id,
+                BetCost = x.Event.BetCost,
+                EventTypeId = x.Event.EventTypeId,
+                GainedPoints = x.Result == true ? x.Event.WinValue : 0,
+                Name = x.Event.Name,
+                Team1Score = x.Value1,
+                Team2Score = x.Value2
+            }).ToListAsync();
 
         var resultEvent = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == (int)EventType.RuleType.BaseBet);
         if (resultEvent != null) //tmp
