@@ -1,7 +1,14 @@
-﻿namespace JanuszPOL.JanuszPOLBets.Data.Entities;
+﻿using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
+
+namespace JanuszPOL.JanuszPOLBets.Data.Entities;
 
 public class Game
 {
+    public Game()
+    {
+        EventBets = new HashSet<EventBet>();
+    }
+
     public long Id { get; set; }
     public long Team1Id { get; set; }
     public long Team2Id { get; set; }
@@ -18,4 +25,6 @@ public class Game
 
     public Team Team1 { get; set; }
     public Team Team2 { get; set; }
+
+    public ICollection<EventBet> EventBets { get; set; }
 }

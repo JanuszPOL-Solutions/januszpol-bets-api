@@ -1,5 +1,4 @@
-﻿using JanuszPOL.JanuszPOLBets.Data.Entities;
-using JanuszPOL.JanuszPOLBets.Repository.Games;
+﻿using JanuszPOL.JanuszPOLBets.Repository.Games;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using JanuszPOL.JanuszPOLBets.Repository.Teams;
 using JanuszPOL.JanuszPOLBets.Services.Common;
@@ -9,7 +8,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Games;
 
 public interface IGamesService
 {
-    Task<ServiceResult<IList<GetGamesResult>>> Get(GetGamesInput input);
+    Task<ServiceResult<IList<GetGameResultDto>>> Get(GetGamesInput input);
     Task<ServiceResult<IList<GetGamesResult>>> GetAll();
     bool AddGame(AddGameInput gameInput);
     void UpdateGame(UpdateGameInput updateInput);
@@ -40,8 +39,8 @@ public class GamesService : IGamesService
 
     public void UpdateGame(UpdateGameInput updateInput)
     {
-        var updatedGame = new UpdateGameDto 
-        { 
+        var updatedGame = new UpdateGameDto
+        {
             Id = updateInput.Id,
             Team1Score = updateInput.Team1Score,
             Team2Score = updateInput.Team2Score,
@@ -61,10 +60,10 @@ public class GamesService : IGamesService
         }
         else
         {
-            _gamesRepository.Add(new AddGameDto 
-            { 
-                Team1Id = gameInput.Team1Id, 
-                Team2Id = gameInput.Team2Id, 
+            _gamesRepository.Add(new AddGameDto
+            {
+                Team1Id = gameInput.Team1Id,
+                Team2Id = gameInput.Team2Id,
                 GameDate = gameInput.GameDate,
                 PhaseId = gameInput.PhaseId,
                 PhaseName = gameInput.PhaseName
@@ -73,49 +72,23 @@ public class GamesService : IGamesService
         }
     }
 
-    public async Task<ServiceResult<IList<GetGamesResult>>> Get(GetGamesInput input)
+    public async Task<ServiceResult<IList<GetGameResultDto>>> Get(GetGamesInput input)
     {
         if (input == null)
         {
-            return ServiceResult<IList<GetGamesResult>>.WithErrors("Input can't be null");
-        }
-
-        if (input.Skip < 0)
-        {
-            return ServiceResult<IList<GetGamesResult>>.WithErrors("Skip value must be at least 0");
-        }
-
-        if (input.Limit < 1)
-        {
-            return ServiceResult<IList<GetGamesResult>>.WithErrors("Limit value must be at least 1");
+            return ServiceResult<IList<GetGameResultDto>>.WithErrors("Input can't be null");
         }
 
         var games = await _gamesRepository.Get(new GetGameDto
         {
-            NameContains = input.NameContains,
-            Limit = input.Limit,
-            Skip = input.Skip,
-            NameStartsWith = input.NameStartsWith
+            AccountId = input.AccountId,
+            Phase = input.Phase,
+            Beted = input.Beted,
+            PhaseNames = input.PhaseNames,
+            TeamIds = input.TeamIds
         });
 
-        var result = ServiceResult<IList<GetGamesResult>>.WithSuccess(
-            games.Select(x => new GetGamesResult
-            {
-                Id = x.Id,
-                Team1 = x.Team1,
-                Team2= x.Team2,
-                GameDate = x.Date,
-                Phase = x.Stage,
-                Team2Score = x.Team2Score,
-                Team1Score = x.Team1Score,
-                Team2PenaltyScore = x.Team2PenaltyScore,
-                PhaseName = x.PhaseName,
-                Result = x.Result,
-                Team1PenaltyScore = x.Team1PenaltyScore
-            }).ToList()
-        );
-
-        return result;
+        return ServiceResult<IList<GetGameResultDto>>.WithSuccess(games.ToList());
     }
 
     public async Task<ServiceResult<IList<GetGamesResult>>> GetAll()
@@ -126,13 +99,13 @@ public class GamesService : IGamesService
             games.Select(x => new GetGamesResult
             {
                 Id = x.Id,
-                Team1= x.Team1,
-                Team2= x.Team2
+                Team1 = x.Team1,
+                Team2 = x.Team2
             }).ToList()
         );
 
         return result;
     }
 
-    
+
 }

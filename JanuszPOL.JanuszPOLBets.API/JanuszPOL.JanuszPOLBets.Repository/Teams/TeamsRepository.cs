@@ -22,16 +22,12 @@ public class TeamsRepository : ITeamsRepository
     public async Task<GetTeamResultDto[]> Get(GetTeamDto dto)
     {
         var teams = await _db.Teams
-            .Where(x => string.IsNullOrEmpty(dto.NameContains) || x.Name.ToLower().Contains(dto.NameContains.ToLower()))
-            .Where(x => string.IsNullOrEmpty(dto.NameStartsWith) || x.Name.ToLower().StartsWith(dto.NameStartsWith.ToLower()))
             .Select(x => new GetTeamResultDto
             {
                 TeamId = x.Id,
                 Name = x.Name,
                 FlagUrl = x.FlagUrl
             })
-            .Skip(dto.Skip)
-            .Take(dto.Limit)
             .ToArrayAsync();
 
         return teams;

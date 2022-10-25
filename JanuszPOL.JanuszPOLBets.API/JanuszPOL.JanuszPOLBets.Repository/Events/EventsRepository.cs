@@ -99,7 +99,19 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         {
             var bets = await _dataContext.EventBet
                 .Where(x => x.GameId == gameId && !x.IsDeleted)
-                .Select(x => TranslateToExistingBetDto(x))
+                //.Select(x => TranslateToExistingBetDto(x))
+                .Select(x => new ExistingEventBetDto
+                {
+                    EventBetId = x.Id,
+                    AccountId = x.AccountId,
+                    GameId = x.GameId,
+                    EventId = x.EventId,
+                    Value1 = x.Value1,
+                    Value2 = x.Value2,
+                    EventName = x.Event.Name,
+                    EventDescription = x.Event.Description,
+                    EventType = EventDto.TranslateEventType(x.Event.EventType)
+                })
                 .ToListAsync();
 
             return bets;
@@ -179,7 +191,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             return bet;
         }
 
-        private EventDto TranslateToEventDto(Event evt)
+        private static EventDto TranslateToEventDto(Event evt)
         {
             return new EventDto
             {
@@ -192,7 +204,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             };
         }
 
-        private ExistingEventBetDto TranslateToExistingBetDto(EventBet eventBet)
+        private static ExistingEventBetDto TranslateToExistingBetDto(EventBet eventBet)
         {
             return new ExistingEventBetDto
             {

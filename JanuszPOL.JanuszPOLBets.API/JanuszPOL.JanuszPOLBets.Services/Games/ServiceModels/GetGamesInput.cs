@@ -1,18 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JanuszPOL.JanuszPOLBets.Data.Entities;
+using System.Text.Json.Serialization;
+using static JanuszPOL.JanuszPOLBets.Repository.Games.Dto.GetGameDto;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
 
 public class GetGamesInput
 {
-    [MaxLength(64)]
-    public string NameContains { get; set; }
-
-    [MaxLength(64)]
-    public string NameStartsWith { get; set; }
-
-    [Required]
-    public int Skip { get; set; }
-
-    [Required]
-    public int Limit { get; set; }
+    [JsonIgnore]
+    public long AccountId { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BetState? Beted { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Phase.Types? Phase { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? PhaseNames { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long[]? TeamIds { get; set; }
 }

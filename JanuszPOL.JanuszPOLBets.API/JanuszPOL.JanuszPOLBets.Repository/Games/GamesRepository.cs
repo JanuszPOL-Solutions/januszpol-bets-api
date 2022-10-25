@@ -1,6 +1,7 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
+using JanuszPOL.JanuszPOLBets.Data.Extensions;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,25 +59,51 @@ public class GamesRepository : IGamesRepository
     public async Task<GetGameResultDto[]> Get(GetGameDto dto)
     {
         var games = await _db.Games
-            .Where(x => string.IsNullOrEmpty(dto.NameContains) || x.Team1.Name.ToLower().Contains(dto.NameContains.ToLower()))
-            .Where(x => string.IsNullOrEmpty(dto.NameStartsWith) || x.Team1.Name.ToLower().StartsWith(dto.NameStartsWith.ToLower()))
+            .Where(x => dto.Phase == null || x.PhaseId == dto.Phase.Value)
+            .Where(x => dto.TeamIds == null || dto.TeamIds.Contains(x.Team1Id) || dto.TeamIds.Contains(x.Team2Id))
+            .Where(x => dto.PhaseNames == null || dto.PhaseNames.Contains(x.PhaseName))
+            //.Where(x => dto.Beted == null ||
+            //    (dto.Beted == GetGameDto.BetState.NotBeted && //not beted
+            //        !x.EventBets
+            //            .Where(y => y.AccountId == dto.AccountId)
+            //            .Where(y => !y.IsDeleted)
+            //            .Where(y => y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
+            //            .Any()) ||
+            //    (dto.Beted == GetGameDto.BetState.Beted && //beted
+            //        x.EventBets
+            //                .Where(y => y.AccountId == dto.AccountId)
+            //                .Where(y => !y.IsDeleted)
+            //                .Where(y => y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
+            //                .Any()
+            //    ) ||
+            //    (dto.Beted == GetGameDto.BetState.ToBet &&
+            //        !x.EventBets
+            //                    .Where(y => y.AccountId == dto.AccountId)
+            //                    .Where(y => !y.IsDeleted)
+            //                    .Where(y => y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
+            //                    .Any() && x.GameDate > DateTime.Now
+            //    )
+            //)
             .Select(x => new GetGameResultDto
             {
                 Id = x.Id,
                 Team1 = x.Team1.Name,
                 Team2 = x.Team2.Name,
-                Date = x.GameDate,
+                GameDate = x.GameDate,
                 PhaseName = x.PhaseName,
                 Result = (int?)x.GameResultId,
                 Team1PenaltyScore = x.Team1ScorePenalties,
                 Team2PenaltyScore = x.Team2ScorePenalties,
                 Team1Score = x.Team1Score,
                 Team2Score = x.Team2Score,
-                Stage = (int)x.PhaseId,
-                //TODO: add user context to get events count and result event
+                Phase = (int)x.PhaseId,
+                ResultEventBet = x.EventBets
+                    .Where(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
+                    .Select(x => x.Id)
+                    .FirstOrDefault(),
+                EventsBetedCount = x.EventBets
+                    .Count(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId != (int)EventType.RuleType.BaseBet)
             })
-            .Skip(dto.Skip)
-            .Take(dto.Limit)
             .ToArrayAsync();
 
         return games;
