@@ -70,15 +70,15 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         }
 
         [HttpPost("EventBetResult")]
-        [Description("Method for adding result for a event bet")]
+        [Description("Method for adding result for a event bet - FOR NOW ONLY COUPLE OF EVENTS SUPPORTED")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult>> AddEventBetResult([FromBody] EventBetInput baseEventBetResultInput)
+        public async Task<ActionResult<ServiceResult>> AddEventBetResult([FromBody] EventBetResultInput eventBetResult)
         {
             return await MethodWrapper(async () =>
             {
-                return await _eventService.AddEventBetResult(baseEventBetResultInput);
+                return await _eventService.AddEventBetResult(eventBetResult);
             });
         }
 
