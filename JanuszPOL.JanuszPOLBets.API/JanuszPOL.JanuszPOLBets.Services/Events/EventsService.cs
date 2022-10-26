@@ -1,7 +1,13 @@
-﻿using JanuszPOL.JanuszPOLBets.Repository.Events;
+﻿using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
+using JanuszPOL.JanuszPOLBets.Repository.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
+using JanuszPOL.JanuszPOLBets.Repository.Games;
+using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
+using EventBet = JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels.EventBet;
+using EventDto = JanuszPOL.JanuszPOLBets.Repository.Events.Dto.EventDto;
+using EventType = JanuszPOL.JanuszPOLBets.Data.Entities.Events.EventType;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Events;
 
@@ -15,16 +21,21 @@ public interface IEventService
     Task<ServiceResult> DeleteEventBet(long betId);
     Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId);
+    Task<ServiceResult> UpdateMatchResults(long gameId, int Team1Score, int Team2Score);
+    Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened);
+
 }
 
 public class EventsService : IEventService
 {
     private readonly IEventsRepository _eventsRepository;
+    private readonly IGamesRepository _gamesRepository;
     private const int MaxBetsPerAccountAndGame = 2;
 
-    public EventsService(IEventsRepository eventsRepository)
+    public EventsService(IEventsRepository eventsRepository, IGamesRepository gamesRepository)
     {
         _eventsRepository = eventsRepository;
+        _gamesRepository = gamesRepository;
     }
 
     public async Task<ServiceResult> AddEventBet(EventBetInput eventBetInput)
@@ -312,5 +323,44 @@ public class EventsService : IEventService
         return eventId == _eventsRepository.Team1WinEventId ||
                     eventId == _eventsRepository.Team2WinEventId ||
                     eventId == _eventsRepository.TieEventId;
+    }
+
+    public async Task<ServiceResult> UpdateMatchResults(long gameId, int Team1Score, int Team2Score)
+    {
+        try
+        {
+            await _gamesRepository.ClearResultForGame(gameId);
+            await _eventsRepository.ClearEventResultForGame(gameId);
+            await _gamesRepository.Update(new UpdateGameDto { Id = gameId, Team1Score = Team1Score, Team2Score = Team2Score });
+            await _eventsRepository.UpdateBaseBet(gameId, Team1Score, Team2Score);
+            await _eventsRepository.UpdateSingleExactBet(gameId, Team1Score,Team2Score);
+            await _eventsRepository.UpdateBothExactBet(gameId, Team1Score, Team2Score);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult.WithErrors($"Error when updating match result, {ex}");
+        }
+        return ServiceResult.WithSuccess();
+    }
+
+    public async Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened)
+    {
+        var eventOfType = await _eventsRepository.GetEventById(eventId);
+        if(eventOfType.EventTypeId != (int)EventType.RuleType.Boolean)
+        {
+            return ServiceResult.WithErrors("Only events of type boolean");
+        }
+        else
+        {
+            try
+            {
+                await _eventsRepository.UpdateBoolBet(gameId, eventId, eventHappened);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult.WithErrors($"Error when updating event, {ex}");
+            }
+            return ServiceResult.WithSuccess();
+        }
     }
 }

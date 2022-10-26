@@ -10,8 +10,7 @@ public interface IGamesService
 {
     Task<ServiceResult<IList<GetGameResultDto>>> Get(GetGamesInput input);
     Task<ServiceResult<IList<GetGamesResult>>> GetAll();
-    bool AddGame(AddGameInput gameInput);
-    void UpdateGame(UpdateGameInput updateInput);
+    Task<bool> AddGame(AddGameInput gameInput);
     Task<ServiceResult<SingleGameDto>> GetGame(int gameId, long accountId);
 
 
@@ -37,22 +36,8 @@ public class GamesService : IGamesService
         return result;
     }
 
-    public void UpdateGame(UpdateGameInput updateInput)
-    {
-        var updatedGame = new UpdateGameDto
-        {
-            Id = updateInput.Id,
-            Team1Score = updateInput.Team1Score,
-            Team2Score = updateInput.Team2Score,
-            Team1ScoreExtraTime = updateInput.Team1ScoreExtraTime,
-            Team2ScoreExtraTime = updateInput.Team2ScoreExtraTime,
-            Team1ScorePenalties = updateInput.Team1ScorePenalties,
-            Team2ScorePenalties = updateInput.Team2ScorePenalties,
-            GameResultId = updateInput.GameResultId
-        };
-        _gamesRepository.Update(updatedGame);
-    }
-    public bool AddGame(AddGameInput gameInput)
+    
+    public async Task<bool> AddGame(AddGameInput gameInput)
     {
         if (!_teamsRepository.Exists(gameInput.Team1Id) || !_teamsRepository.Exists(gameInput.Team2Id) || gameInput.Team1Id == gameInput.Team2Id)
         {
@@ -60,7 +45,7 @@ public class GamesService : IGamesService
         }
         else
         {
-            _gamesRepository.Add(new AddGameDto
+            await _gamesRepository.Add(new AddGameDto
             {
                 Team1Id = gameInput.Team1Id,
                 Team2Id = gameInput.Team2Id,

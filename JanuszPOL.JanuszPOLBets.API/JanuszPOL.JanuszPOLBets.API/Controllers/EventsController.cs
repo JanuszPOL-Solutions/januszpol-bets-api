@@ -1,18 +1,17 @@
 ﻿using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
-using Microsoft.AspNetCore.Authorization;
+using JanuszPOL.JanuszPOLBets.Services.Games;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
 {
-    [AllowAnonymous]
     public class EventsController : BaseApiController
     {
         private readonly IEventService _eventService;
 
-        public EventsController(IEventService eventService)
+        public EventsController(IEventService eventService, IGamesService gamesService)
         {
             _eventService = eventService;
         }

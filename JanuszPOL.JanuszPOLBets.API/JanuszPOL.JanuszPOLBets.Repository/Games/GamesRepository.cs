@@ -11,8 +11,9 @@ public interface IGamesRepository
 {
     Task<GetGameResultDto[]> Get(GetGameDto dto);
     Task<GetGameResultDto[]> GetAll();
-    void Add(AddGameDto gameDto);
-    void Update(UpdateGameDto updateDto);
+    Task Add(AddGameDto gameDto);
+    Task Update(UpdateGameDto updateDto);
+    Task ClearResultForGame(long gameId);
     Task<SingleGameDto> GetGameById(int gameId, long accountId);
 }
 
@@ -25,23 +26,30 @@ public class GamesRepository : IGamesRepository
         _db = db;
     }
 
-    public void Update(UpdateGameDto updateDto)
+    public async Task Update(UpdateGameDto updateDto)
     {
         var game = _db.Games.First(x => x.Id == updateDto.Id);
 
         game.Team1Score = updateDto.Team1Score;
         game.Team2Score = updateDto.Team2Score;
-        game.Team1ScoreExtraTime = updateDto.Team1ScoreExtraTime;
-        game.Team2ScoreExtraTime = updateDto.Team2ScoreExtraTime;
-        game.Team1ScorePenalties = updateDto.Team1ScorePenalties;
-        game.Team2ScorePenalties = updateDto.Team2ScorePenalties;
-        game.GameResultId = updateDto.GameResultId;
 
-        _db.SaveChanges();
+        if(updateDto.Team1Score > updateDto.Team2Score)
+        {
+            game.GameResultId = GameResult.Values.Team1;
+        }
+        else if(updateDto.Team1Score < updateDto.Team2Score)
+        {
+            game.GameResultId = GameResult.Values.Team2;
+        }
+        else
+        {
+            game.GameResultId = GameResult.Values.Draw;
+        }
 
+        await _db.SaveChangesAsync();
     }
 
-    public void Add(AddGameDto gameDto)
+    public async Task Add(AddGameDto gameDto)
     {
         var game = new Game
         {
@@ -52,8 +60,8 @@ public class GamesRepository : IGamesRepository
             PhaseName = gameDto.PhaseName,
         };
 
-        _db.Games.Add(game);
-        _db.SaveChanges();
+        await _db.Games.AddAsync(game);
+        await _db.SaveChangesAsync();
     }
 
     public async Task<GetGameResultDto[]> Get(GetGameDto dto)
@@ -175,5 +183,21 @@ public class GamesRepository : IGamesRepository
         };
 
         return gameDto;
+    }
+
+    public async Task ClearResultForGame(long gameId)
+    {
+        var game = _db.Games.First(x => x.Id == gameId);
+        
+            game.Team1Score = null;
+            game.Team2Score = null;
+            game.Team1ScoreExtraTime = null;
+            game.Team2ScoreExtraTime = null;
+            game.Team1ScorePenalties = null;
+            game.Team2ScorePenalties = null;
+            game.GameResultId = null;
+
+        await _db.SaveChangesAsync();
+        
     }
 }
