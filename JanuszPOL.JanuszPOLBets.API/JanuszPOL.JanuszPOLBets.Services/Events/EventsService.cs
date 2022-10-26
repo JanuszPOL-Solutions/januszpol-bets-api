@@ -212,7 +212,7 @@ public class EventsService : IEventService
 
         await _eventsRepository.AddEventBetResult(new AddEventBetResultDto
         {
-            EventBetIds = eventBets.Select(x => x.EventId)
+            EventBetIds = eventBets.Select(x => x.EventBetId)
         });
 
         return ServiceResult.WithSuccess();
