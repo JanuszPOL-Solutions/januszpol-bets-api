@@ -11,7 +11,7 @@ public interface IEventService
     Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
     Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
     Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
-    Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput);
+    Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput);
     Task<ServiceResult> DeleteEventBet(long betId);
     Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId);
@@ -181,16 +181,19 @@ public class EventsService : IEventService
         });
     }
 
-    public async Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput)
+    public async Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput)
     {
-        if (true)
-        {
-            return ServiceResult.WithErrors("Method not implemented, only base bets are available now");
-        }
+        // Right now we're supporting only couple of even types
+        var supportedEventIds = new long[] { 4, 5, 9 };
 
         if (IsBaseBetEventId(eventBetInput.EventId))
         {
             return ServiceResult.WithErrors("For base bet results use different endpoint");
+        }
+
+        if (!supportedEventIds.Any(x => x == eventBetInput.EventId))
+        {
+            return ServiceResult.WithErrors("Event type result not supported yet");
         }
 
         var bets = await _eventsRepository.GetBetsForGame(eventBetInput.GameId);
@@ -200,9 +203,17 @@ public class EventsService : IEventService
             return ServiceResult.WithSuccess();
         }
 
-
-
         var eventBets = bets.Where(x => x.EventId == eventBetInput.EventId);
+
+        if (eventBets == null)
+        {
+            return ServiceResult.WithSuccess();
+        }
+
+        await _eventsRepository.AddEventBetResult(new AddEventBetResultDto
+        {
+            EventBetIds = eventBets.Select(x => x.EventBetId)
+        });
 
         return ServiceResult.WithSuccess();
     }
