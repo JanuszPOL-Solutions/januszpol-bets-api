@@ -6,6 +6,6 @@ public static class EventExtensions
 {
     public static bool IsBaseEvent(this Event @event)
     {
-        return @event.EventTypeId == (int)EventType.RuleType.BaseBet;
+        return @event.EventTypeId == EventType.RuleType.BaseBet;
     }
 }

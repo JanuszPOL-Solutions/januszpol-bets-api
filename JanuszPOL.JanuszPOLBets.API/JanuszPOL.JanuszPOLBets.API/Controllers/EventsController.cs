@@ -1,4 +1,5 @@
-﻿using JanuszPOL.JanuszPOLBets.Services.Common;
+﻿using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
+using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +36,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult>> AddEventBet([FromBody] EventBetInput eventBetInput)
+        public async Task<ActionResult<ServiceResult<GameEventBetDto>>> AddEventBet([FromBody] EventBetInput eventBetInput)
         {
             return await MethodWrapper(async () =>
             {
