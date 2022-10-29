@@ -1,0 +1,37 @@
+name: Docker-build
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  SRC_DIR: JanuszPOL.JanuszPOLBets.API
+  DOCKER_IMAGE_NAME: januszpol-bets-api
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ env.SRC_DIR }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: get-latest-git-tag
+        id: latestgittag
+        run: |
+          gittag=`git describe --tags`
+          echo "::set-output name=tag::$gittag"
+          
+      - name: build-docker-image
+        run: docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.latestgittag.outputs.tag }} .
+      - name: zip-docker-image
+        run: docker save ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.latestgittag.outputs.tag }} | gzip > ${{ env.DOCKER_IMAGE_NAME }}-${{ steps.latestgittag.outputs.tag }}.tar.gz
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: drop
+          if-no-files-found: error
+          path: |
+            ${{ env.SRC_DIR }}/${{ env.DOCKER_IMAGE_NAME }}-${{ steps.latestgittag.outputs.tag }}.tar.gz
