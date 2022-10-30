@@ -10,8 +10,8 @@
             TwoExactValues = 4
         }
 
-        public long Id { get; set; }
-        public RuleType Type { get; set; }
+        public RuleType Id { get; set; }
+        public string Type { get; set; }
     }
 }
 

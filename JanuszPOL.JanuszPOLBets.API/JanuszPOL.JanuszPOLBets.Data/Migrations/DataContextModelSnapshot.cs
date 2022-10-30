@@ -156,7 +156,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 
                     b.HasIndex("EventTypeId");
 
-                    b.ToTable("Event");
+                    b.ToTable("Event", (string)null);
 
                     b.HasData(
                         new
@@ -279,7 +279,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 
                     b.HasIndex("GameId");
 
-                    b.ToTable("EventBet");
+                    b.ToTable("EventBet", (string)null);
                 });
 
             modelBuilder.Entity("JanuszPOL.JanuszPOLBets.Data.Entities.Events.EventType", b =>
@@ -296,7 +296,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EventTypes");
+                    b.ToTable("EventTypes", (string)null);
 
                     b.HasData(
                         new
@@ -371,7 +371,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
 
                     b.HasIndex("Team2Id");
 
-                    b.ToTable("Games");
+                    b.ToTable("Games", (string)null);
 
                     b.HasData(
                         new
@@ -399,7 +399,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("GamesResults");
+                    b.ToTable("GamesResults", (string)null);
 
                     b.HasData(
                         new
@@ -454,7 +454,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Phase");
+                    b.ToTable("Phase", (string)null);
 
                     b.HasData(
                         new
@@ -491,7 +491,7 @@ namespace JanuszPOL.JanuszPOLBets.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Teams");
+                    b.ToTable("Teams", (string)null);
 
                     b.HasData(
                         new
