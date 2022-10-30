@@ -13,29 +13,29 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
         public void Configure(EntityTypeBuilder<EventType> builder)
         {
             builder.HasKey(x => x.Id);
-
-            builder.Property(x => x.Type).HasConversion<string>().IsRequired();
+            builder.Property(x => x.Id).HasConversion<long>().IsRequired();
+            builder.Property(x => x.Type).IsRequired();
 
             builder.HasData(
                 new EventType
                 {
-                    Id = BaseBetId,
-                    Type = EventType.RuleType.BaseBet
+                    Id = EventType.RuleType.BaseBet,
+                    Type = EventType.RuleType.BaseBet.ToString()
                 },
                 new EventType
                 {
-                    Id = BooleanId,
-                    Type = EventType.RuleType.Boolean
+                    Id = EventType.RuleType.Boolean,
+                    Type = EventType.RuleType.Boolean.ToString()
                 },
                 new EventType
                 {
-                    Id = ExactValueId,
-                    Type = EventType.RuleType.ExactValue
+                    Id = EventType.RuleType.ExactValue,
+                    Type = EventType.RuleType.ExactValue.ToString()
                 },
                 new EventType
                 {
-                    Id = TwoExactValuesId,
-                    Type = EventType.RuleType.TwoExactValues
+                    Id = EventType.RuleType.TwoExactValues,
+                    Type = EventType.RuleType.TwoExactValues.ToString()
                 });
         }
     }

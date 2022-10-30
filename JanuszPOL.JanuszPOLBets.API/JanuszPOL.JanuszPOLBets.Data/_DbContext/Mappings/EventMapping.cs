@@ -31,7 +31,7 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                     Id = id++,
                     Name = "Wygrana pierwszej drużyny",
                     Description = "",
-                    EventTypeId = EventTypeMapping.BaseBetId,
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BaseBetId,
                     BetCost = 0,
                     WinValue = 3
                 },
@@ -40,7 +40,7 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                     Id = id++,
                     Name = "Wygrana drugiej drużyny",
                     Description = "",
-                    EventTypeId = EventTypeMapping.BaseBetId,
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BaseBetId,
                     BetCost = 0,
                     WinValue = 3
                 },
@@ -49,7 +49,7 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                     Id = id++,
                     Name = "Remis",
                     Description = "",
-                    EventTypeId = EventTypeMapping.BaseBetId,
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BaseBetId,
                     BetCost = 0,
                     WinValue = 3
                 },
@@ -58,48 +58,48 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                     Id = id++,
                     Name = "Wygrana w dogrywce",
                     Description = "Zadecyduj czy mecz zakończy się w doliczonym czasie gry",
-                    EventTypeId = EventTypeMapping.BooleanId
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BooleanId
                 },
                 new Event
                 {
                     Id = id++,
                     Name = "Wygrana w karnych",
                     Description = "Zadecyduj czy mecz zakończy się doperio po rzutach karnych",
-                    EventTypeId = EventTypeMapping.BooleanId
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BooleanId
                 },
                 new Event
                 {
                     Id = id++,
                     Name = "Ilość żółtych kartek (>=)",
                     Description = "Zadecyduj ile co najmniej zostanie pokazanych zółtych kartek",
-                    EventTypeId = EventTypeMapping.BooleanId
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BooleanId
                 },
                 new Event
                 {
                     Id = id++,
                     Name = "Ilość bramek",
                     Description = "Zadecyduj ile co najmniej padnie bramek",
-                    EventTypeId = EventTypeMapping.ExactValueId
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.ExactValueId
                 },
                 new Event
                 {
                     Id = id++,
                     Name = "Dokładny wynik",
                     Description = "Wytypuj konkretny wynik meczu",
-                    EventTypeId = EventTypeMapping.TwoExactValuesId
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.TwoExactValuesId
                 }
             };
 
             var goalsBeforeValues = new int[] { 10 };
 
-            foreach(var minute in goalsBeforeValues)
+            foreach (var minute in goalsBeforeValues)
             {
                 eventsCollection.Add(new Event
                 {
                     Id = id++,
                     Name = $"Bramka do {minute} minuty",
                     Description = $"Zadecyduj czy bramka padnie do {minute} minuty",
-                    EventTypeId = EventTypeMapping.BooleanId
+                    EventTypeId = (EventType.RuleType)EventTypeMapping.BooleanId
                 });
             }
 

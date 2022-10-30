@@ -1,10 +1,11 @@
 ﻿namespace JanuszPOL.JanuszPOLBets.Repository.Events.Dto
 {
-    public enum EventType
-    {
-        BaseBet,
-        Boolean,
-        ExactValue,
-        TwoExactValues
-    }
+    //[Obsolete]
+    //public enum EventType
+    //{
+    //    BaseBet,
+    //    Boolean,
+    //    ExactValue,
+    //    TwoExactValues
+    //}
 }

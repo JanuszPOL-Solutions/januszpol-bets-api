@@ -1,6 +1,7 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
+using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace JanuszPOL.JanuszPOLBets.Repository.Events
@@ -10,8 +11,8 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         // We're assuming that there won't be a lot of events so we don't need to paginate it
         Task<IEnumerable<EventDto>> GetEvents();
         Task<EventDto> GetEvent(long eventId);
-        Task AddEventBet(AddEventBetDto addEventBetDto);
-        Task UpdateEventBet(ExistingEventBetDto updateEventBetDto);
+        Task<GameEventBetDto> AddEventBet(AddEventBetDto addEventBetDto);
+        Task<GameEventBetDto> UpdateEventBet(ExistingEventBetDto updateEventBetDto);
         Task<IEnumerable<ExistingEventBetDto>> GetEventBetsForGameAndUser(long gameId, long accountId);
         Task<IEnumerable<ExistingEventBetDto>> GetBetsForGame(long gameId);
         Task AddEventBetResult(AddEventBetResultDto addEventBetResultDto);
@@ -37,9 +38,9 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         public long Team2WinEventId => 2;
         public long TieEventId => 3;
 
-        public async Task AddEventBet(AddEventBetDto addEventBetDto)
+        public async Task<GameEventBetDto> AddEventBet(AddEventBetDto addEventBetDto)
         {
-            _dataContext.EventBet.Add(new EventBet
+            var savedBet = _dataContext.EventBet.Add(new EventBet
             {
                 AccountId = addEventBetDto.AccountId,
                 EventId = addEventBetDto.EventId,
@@ -49,11 +50,31 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             });
 
             await _dataContext.SaveChangesAsync();
+
+            long? matchResult = null;
+            if (savedBet.Entity.EventId <= 3) //base bet
+            {
+                matchResult = savedBet.Entity.EventId;
+            }
+
+            return new GameEventBetDto
+            {
+                Id = savedBet.Entity.Id,
+                EventId = savedBet.Entity.EventId,
+                EventTypeId = savedBet.Entity.Event.EventTypeId,
+                Team1Score = savedBet.Entity.Value1,
+                Team2Score = savedBet.Entity.Value2,
+                Name = savedBet.Entity.Event.Name,
+                GainedPoints = 0,
+                BetCost = savedBet.Entity.Event.BetCost,
+                MatchResult = matchResult
+            };
         }
 
         public async Task<EventDto> GetEvent(long eventId)
         {
             var @event = await _dataContext.Event
+                .Where(x => x.Id == eventId)
                 .Select(x => TranslateToEventDto(x))
                 .SingleAsync();
 
@@ -64,7 +85,6 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         {
             var bets = await _dataContext.EventBet
                 .Include(x => x.Event)
-                .Include(x => x.Event.EventType)
                 .Where(x => x.AccountId == accountId && x.GameId == gameId && !x.IsDeleted)
                 .Select(x => TranslateToExistingBetDto(x))
                 .ToListAsync();
@@ -81,7 +101,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             return events;
         }
 
-        public async Task UpdateEventBet(ExistingEventBetDto updateEventBetDto)
+        public async Task<GameEventBetDto> UpdateEventBet(ExistingEventBetDto updateEventBetDto)
         {
             var bet = await _dataContext.EventBet
                 .SingleAsync(x => x.Id == updateEventBetDto.EventBetId && !x.IsDeleted);
@@ -93,6 +113,26 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             bet.Value2 = updateEventBetDto.Value2;
 
             _dataContext.SaveChanges();
+
+
+            long? matchResult = null;
+            if (bet.EventId <= 3) //base bet
+            {
+                matchResult = bet.EventId;
+            }
+
+            return new GameEventBetDto
+            {
+                Id = bet.Id,
+                EventId = bet.EventId,
+                EventTypeId = bet.Event.EventTypeId,
+                Team1Score = bet.Value1,
+                Team2Score = bet.Value2,
+                Name = bet.Event.Name,
+                GainedPoints = 0,
+                BetCost = bet.Event.BetCost,
+                MatchResult = matchResult
+            };
         }
 
         public async Task<IEnumerable<ExistingEventBetDto>> GetBetsForGame(long gameId)
@@ -110,7 +150,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                     Value2 = x.Value2,
                     EventName = x.Event.Name,
                     EventDescription = x.Event.Description,
-                    EventType = EventDto.TranslateEventType(x.Event.EventType)
+                    EventType = x.Event.EventTypeId
                 })
                 .ToListAsync();
 
@@ -197,7 +237,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             {
                 BetCost = evt.BetCost,
                 Description = evt.Description,
-                EventType = EventDto.TranslateEventType(evt.EventType),
+                EventType = evt.EventTypeId,
                 Id = evt.Id,
                 Name = evt.Name,
                 WinValue = evt.WinValue
@@ -216,7 +256,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 Value2 = eventBet.Value2,
                 EventName = eventBet.Event.Name,
                 EventDescription = eventBet.Event.Description,
-                EventType = EventDto.TranslateEventType(eventBet.Event.EventType)
+                EventType = eventBet.Event.EventTypeId
             };
         }
     }
