@@ -49,11 +49,25 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult>> AddBaseEventBet([FromBody] BaseEventBetInput baseEventBetInput)
+        public async Task<ActionResult<ServiceResult<GameEventBetDto>>> AddBaseEventBet([FromBody] BaseEventBetInput baseEventBetInput)
         {
             return await MethodWrapper(async () =>
             {
                 return await _eventService.AddBaseEventBet(baseEventBetInput);
+            });
+        }
+
+        [HttpPost("ExactScoreBet")]
+        [Description("Method for bet bet for score event. That is temporary endpoint")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult<GameEventBetDto>>> AddExactScoreEventBet([FromBody] TwoValuesEventBetInput twoValuesEventBetInput)
+        {
+            return await MethodWrapper(async () =>
+            {
+                twoValuesEventBetInput.EventId = 8; //TMP: Hardcoded Game result event
+                return await _eventService.Add2ValuesEventBet(twoValuesEventBetInput);
             });
         }
 

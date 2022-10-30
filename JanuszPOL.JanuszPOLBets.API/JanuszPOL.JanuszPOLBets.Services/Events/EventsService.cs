@@ -10,7 +10,8 @@ public interface IEventService
 {
     Task<ServiceResult<IList<GetEventsResult>>> GetEvents();
     Task<ServiceResult<GameEventBetDto>> AddEventBet(EventBetInput eventBetInput);
-    Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput);
     Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
     Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput);
     Task<ServiceResult> DeleteEventBet(long betId);
@@ -101,7 +102,25 @@ public class EventsService : IEventService
             }).ToList());
     }
 
-    public async Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput)
+    public async Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput)
+    {
+        //TODO: add more- validation
+        if (eventBetInput.Value1 < 0 || eventBetInput.Value2 < 0)
+        {
+            return ServiceResult<GameEventBetDto>.WithErrors("Scores can't be negative");
+        }
+
+        return await AddEventBet(new EventBetInput
+        {
+            AccountId = eventBetInput.AccountId,
+            EventId = eventBetInput.EventId,
+            GameId = eventBetInput.GameId,
+            Value1 = eventBetInput.Value1,
+            Value2 = eventBetInput.Value2
+        });
+    }
+
+    public async Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput)
     {
         var betInput = new EventBetInput
         {
@@ -125,7 +144,7 @@ public class EventsService : IEventService
                 break;
 
             default:
-                return ServiceResult.WithErrors($"Invalid bet type {eventBetInput.BetType}");
+                return ServiceResult<GameEventBetDto>.WithErrors($"Invalid bet type {eventBetInput.BetType}");
         }
 
         betInput.EventId = eventId;
