@@ -1,7 +1,4 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET-build
 
 on:
   push:
@@ -9,11 +6,16 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  SRC_DIR: JanuszPOL.JanuszPOLBets.API
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ env.SRC_DIR }}
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
