@@ -85,6 +85,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         {
             var bets = await _dataContext.EventBet
                 .Include(x => x.Event)
+                .Where(x => !x.IsDeleted)
                 .Where(x => x.AccountId == accountId && x.GameId == gameId && !x.IsDeleted)
                 .Select(x => TranslateToExistingBetDto(x))
                 .ToListAsync();
