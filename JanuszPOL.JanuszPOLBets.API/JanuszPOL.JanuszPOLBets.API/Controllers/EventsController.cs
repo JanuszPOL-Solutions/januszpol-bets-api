@@ -58,7 +58,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         }
 
         [HttpPost("ExactScoreBet")]
-        [Description("Method for bet bet for score event. That is temporary endpoint")]
+        [Description("Method for adding bet for score event. That is temporary endpoint")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -68,6 +68,20 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             {
                 twoValuesEventBetInput.EventId = 8; //TMP: Hardcoded Game result event
                 return await _eventService.Add2ValuesEventBet(twoValuesEventBetInput);
+            });
+        }
+
+        [HttpPost("BoolBet")]
+        [Description("Add bool bet")]
+        [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<ServiceResult<GameEventBetDto>>> AddBoolEventBet([FromBody] BoolBetInput boolBetEvent)
+        {
+            return await MethodWrapper(async () =>
+            {
+                boolBetEvent.AccountId = 2;//TMP!!!!
+                return await _eventService.AddBoolEventBet(boolBetEvent);
             });
         }
 
@@ -97,7 +111,7 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             });
         }
 
-        [HttpDelete("EventBet")]
+        [HttpDelete("EventBet/{betId}")]
         [Description("Method for deleting an event bet")]
         [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

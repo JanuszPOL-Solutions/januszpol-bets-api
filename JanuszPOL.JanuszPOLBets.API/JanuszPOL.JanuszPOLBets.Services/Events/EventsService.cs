@@ -12,6 +12,7 @@ public interface IEventService
     Task<ServiceResult<GameEventBetDto>> AddEventBet(EventBetInput eventBetInput);
     Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput);
     Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> AddBoolEventBet(BoolBetInput eventBetInput);
     Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
     Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput);
     Task<ServiceResult> DeleteEventBet(long betId);
@@ -150,6 +151,18 @@ public class EventsService : IEventService
         betInput.EventId = eventId;
 
         return await AddEventBet(betInput);
+    }
+
+    public async Task<ServiceResult<GameEventBetDto>> AddBoolEventBet(BoolBetInput eventBetInput)
+    {
+        var input = new EventBetInput
+        {
+            AccountId = eventBetInput.AccountId,
+            EventId = eventBetInput.EventId,
+            GameId = eventBetInput.GameId
+        };
+
+        return await AddEventBet(input);
     }
 
     public async Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput)

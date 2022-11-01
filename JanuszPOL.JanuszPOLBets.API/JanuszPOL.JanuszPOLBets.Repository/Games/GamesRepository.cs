@@ -127,6 +127,7 @@ public class GamesRepository : IGamesRepository
             .FirstAsync(x => x.Id == gameId);
 
         var listSelectedEvents = await _db.EventBet
+            .Where(x => !x.IsDeleted)
             .Where(x => x.GameId == gameId)
             .Where(x => x.AccountId == accountId)
             .Select(x => new GameEventBetDto
