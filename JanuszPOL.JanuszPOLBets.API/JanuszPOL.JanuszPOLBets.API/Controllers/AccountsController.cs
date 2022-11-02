@@ -57,7 +57,7 @@ public class AccountsController : BaseApiController
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<ActionResult<ServiceResult<LoginResult>>> Login([FromBody] LoginDto loginDto)
     {
         var result = await _accountService.Login(loginDto);
 
@@ -66,8 +66,7 @@ public class AccountsController : BaseApiController
             return BadRequest(result.ErrorsMessage);
         }
 
-        var token = new JwtSecurityTokenHandler().WriteToken(result.Result);
-        return Ok(token);
+        return Ok(result);
     }
 
 }

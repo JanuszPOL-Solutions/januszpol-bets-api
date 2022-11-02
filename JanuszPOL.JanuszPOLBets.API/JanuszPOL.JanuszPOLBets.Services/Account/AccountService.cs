@@ -14,7 +14,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Account
     {
         Task<ServiceResult> RegisterUser(RegisterDto registerDto);
         Task<ServiceResult> RegisterAdmin(RegisterDto registerDto);
-        Task<ServiceResult<JwtSecurityToken>> Login(LoginDto loginDto);
+        Task<ServiceResult<LoginResult>> Login(LoginDto loginDto);
     }
     
     public class AccountService : IAccountService
@@ -35,7 +35,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Account
         {
             var userExists = await _userManager.FindByNameAsync(registerDto.Username);
             if (userExists != null)
+            {
                 return ServiceResult.WithErrors("User already exists!");
+            }
 
             Data.Entities.Account account = new()
             {
@@ -43,30 +45,40 @@ namespace JanuszPOL.JanuszPOLBets.Services.Account
                 UserName = registerDto.Username
             };
             var result = await _userManager.CreateAsync(account, registerDto.Password);
-            if (!result.Succeeded)
-                return ServiceResult.WithErrors("User creation failed! Please check user details and try again.");
-
-            return ServiceResult.WithSuccess();
+            return !result.Succeeded
+                ? ServiceResult.WithErrors("User creation failed! Please check user details and try again.")
+                : ServiceResult.WithSuccess();
         }
 
         public async Task<ServiceResult> RegisterAdmin(RegisterDto registerDto)
         {
             var userExists = await _userManager.FindByNameAsync(registerDto.Username);
             if (userExists != null)
+            {
                 return ServiceResult.WithErrors("User already exists!");
+            }
+
             Data.Entities.Account account = new()
             {
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = registerDto.Username
             };
+
             var result = await _userManager.CreateAsync(account, registerDto.Password);
             if (!result.Succeeded)
+            {
                 return ServiceResult.WithErrors("User creation failed! Please check user details and try again.");
+            }
 
             if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
+            {
                 await _roleManager.CreateAsync(new IdentityRole<long>(UserRoles.Admin));
+            }
+
             if (!await _roleManager.RoleExistsAsync(UserRoles.User))
+            {
                 await _roleManager.CreateAsync(new IdentityRole<long>(UserRoles.User));
+            }
 
             if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
             {
@@ -76,10 +88,11 @@ namespace JanuszPOL.JanuszPOLBets.Services.Account
             {
                 await _userManager.AddToRoleAsync(account, UserRoles.User);
             }
+
             return ServiceResult.WithSuccess();
         }
 
-        public async Task<ServiceResult<JwtSecurityToken>> Login(LoginDto loginDto)
+        public async Task<ServiceResult<LoginResult>> Login(LoginDto loginDto)
         {
             var account = await _userManager.FindByNameAsync(loginDto.UserName);
             if (account != null && await _userManager.CheckPasswordAsync(account, loginDto.Password))
@@ -97,12 +110,14 @@ namespace JanuszPOL.JanuszPOLBets.Services.Account
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                 }
 
+                var isAdmin = userRoles.Any(x => x == UserRoles.Admin);
                 var token = GetToken(authClaims);
 
-                return ServiceResult<JwtSecurityToken>.WithSuccess((token));
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+                return ServiceResult<LoginResult>.WithSuccess(new LoginResult(tokenString, account.UserName, isAdmin));
             }
-            return ServiceResult<JwtSecurityToken>.WithErrors("Username or password incorrect");
 
+            return ServiceResult<LoginResult>.WithErrors("Username or password incorrect");
         }
 
         private JwtSecurityToken GetToken(IList<Claim> authClaims)
