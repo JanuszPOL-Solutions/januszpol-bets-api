@@ -4,6 +4,7 @@ using System.Text;
 using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using JanuszPOL.JanuszPOLBets.Services.Account;
 
 namespace JanuszPOL.JanuszPOLBets.API.Extensions;
 
@@ -15,6 +16,9 @@ public static class IdentityServiceExtensions
         services.AddIdentity<Account, IdentityRole<long>>()
             .AddEntityFrameworkStores<DataContext>()
             .AddDefaultTokenProviders();
+
+        const string authSection = "JWT";
+        services.Configure<AuthConfiguration>(config.GetSection(authSection));
 
         // Adding Authentication
         services.AddAuthentication(options =>
@@ -33,9 +37,9 @@ public static class IdentityServiceExtensions
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidAudience = config["JWT:ValidAudience"],
-                    ValidIssuer = config["JWT:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:Secret"]))
+                    ValidAudience = config[$"{authSection}:ValidAudience"],
+                    ValidIssuer = config[$"{authSection}:ValidIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config[$"{authSection}:Secret"]))
                 };
             });
 

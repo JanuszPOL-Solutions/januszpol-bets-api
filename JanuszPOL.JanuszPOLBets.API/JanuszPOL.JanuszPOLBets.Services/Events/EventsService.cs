@@ -18,6 +18,7 @@ public interface IEventService
     Task<ServiceResult> DeleteEventBet(long betId);
     Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId);
+    Task<ServiceResult<RankingDto>> GetFullRanking();
 }
 
 public class EventsService : IEventService
@@ -218,6 +219,13 @@ public class EventsService : IEventService
             BaseBetsScore = baseBestScore ?? 0,
             NonBaseBetsScore = nonBaseBetWinScore - nonBaseBetCost
         });
+    }
+
+    public async Task<ServiceResult<RankingDto>> GetFullRanking()
+    {
+        var ranking = await _eventsRepository.GetFullRanking();
+
+        return ServiceResult<RankingDto>.WithSuccess(ranking);
     }
 
     public async Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput)

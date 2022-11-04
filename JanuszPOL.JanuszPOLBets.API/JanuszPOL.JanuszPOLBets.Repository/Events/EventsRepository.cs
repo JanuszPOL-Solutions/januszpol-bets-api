@@ -22,6 +22,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         long Team1WinEventId { get; }
         long Team2WinEventId { get; }
         long TieEventId { get; }
+        Task<RankingDto> GetFullRanking();
     }
 
     public class EventsRepository : IEventsRepository
@@ -230,6 +231,39 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 .SingleAsync();
 
             return bet;
+        }
+
+        public async Task<RankingDto> GetFullRanking()
+        {
+            var allEventBets = await _dataContext.EventBet
+                .Where(x => !x.IsDeleted)
+                .Select(x => new
+                {
+                    x.AccountId,
+                    x.Account.UserName,
+                    x.Event.WinValue,
+                    x.Event.BetCost,
+                    x.Result
+                })
+                .ToListAsync();
+
+
+            var ranking = allEventBets
+                .GroupBy(x => x.AccountId)
+                .ToDictionary(x => x.First().UserName, x => x)
+                .Select(x => new RankingDto.RankingRow
+                {
+                    Username = x.Key,
+                    Score = //TODO: add base value
+                    x.Value.Where(y => y.Result == true).Sum(y => y.WinValue)
+                    -
+                    x.Value.Sum(y => y.BetCost)
+                });
+
+            return new RankingDto
+            {
+                Rows = ranking.ToArray()
+            };
         }
 
         private static EventDto TranslateToEventDto(Event evt)

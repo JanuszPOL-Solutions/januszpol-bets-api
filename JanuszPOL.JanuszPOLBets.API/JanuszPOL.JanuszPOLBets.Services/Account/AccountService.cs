@@ -5,7 +5,7 @@ using JanuszPOL.JanuszPOLBets.Data.Identity;
 using JanuszPOL.JanuszPOLBets.Repository.Account.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Account;
@@ -22,14 +22,15 @@ public class AccountService : IAccountService
 {
     private readonly UserManager<Data.Entities.Account> _userManager;
     private readonly RoleManager<IdentityRole<long>> _roleManager;
-    private readonly IConfiguration _configuration; //wrong
-
-    public AccountService(UserManager<Data.Entities.Account> userManager,
-        RoleManager<IdentityRole<long>> roleManager, IConfiguration configuration)
+    private readonly IOptions<AuthConfiguration> _authOptions;
+    public AccountService(
+        UserManager<Data.Entities.Account> userManager,
+        RoleManager<IdentityRole<long>> roleManager,
+        IOptions<AuthConfiguration> authOptions)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _configuration = configuration;
+        _authOptions = authOptions;
     }
 
     public async Task<ServiceResult> RegisterUser(RegisterDto registerDto)
@@ -56,7 +57,7 @@ public class AccountService : IAccountService
         var userExists = await _userManager.FindByNameAsync(registerDto.Username);
         if (userExists != null)
         {
-            return ServiceResult.WithErrors("User already exists!");
+            return ServiceResult.WithErrors($"Użytkownik z nickiem: {registerDto.Username} już istnieje");
         }
 
         Data.Entities.Account account = new()
@@ -148,11 +149,11 @@ public class AccountService : IAccountService
 
     private JwtSecurityToken GetToken(IList<Claim> authClaims)
     {
-        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authOptions.Value.Secret));
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JWT:ValidIssuer"],
-            audience: _configuration["JWT:ValidAudience"],
+            issuer: _authOptions.Value.ValidIssuer,
+            audience: _authOptions.Value.ValidAudience,
             expires: DateTime.Now.AddHours(3),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
