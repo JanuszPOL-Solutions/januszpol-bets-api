@@ -15,7 +15,7 @@ public interface IEventService
     Task<ServiceResult<GameEventBetDto>> AddBoolEventBet(BoolBetInput eventBetInput);
     Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
     Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput);
-    Task<ServiceResult> DeleteEventBet(long betId);
+    Task<ServiceResult> DeleteEventBet(long betId, long accountId);
     Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId);
     Task<ServiceResult<RankingDto>> GetFullRanking();
@@ -265,13 +265,18 @@ public class EventsService : IEventService
         return ServiceResult.WithSuccess();
     }
 
-    public async Task<ServiceResult> DeleteEventBet(long betId)
+    public async Task<ServiceResult> DeleteEventBet(long betId, long accountId)
     {
-        var existingBet = await _eventsRepository.GetEventBet(betId);
+        var existingBet = await _eventsRepository.GetEventBet(betId, accountId);
+
+        if (existingBet == null)
+        {
+            return ServiceResult.WithErrors("Wybrany zakład nie istnieje.");
+        }
 
         if (IsBaseBetEventId(existingBet.EventId))
         {
-            return ServiceResult.WithErrors("Base bets cannot be deleted");
+            return ServiceResult.WithErrors("Zakład rezultatu meczu nie może być usunięty");
         }
 
         try
@@ -280,7 +285,7 @@ public class EventsService : IEventService
         }
         catch (Exception e)
         {
-            return ServiceResult.WithErrors($"Error when deleting event bet, {e}");
+            return ServiceResult.WithErrors($"Wystąpił wyjątek w trakcie usuwania zakładu, {e}");
         }
 
         return ServiceResult.WithSuccess();

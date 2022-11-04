@@ -5,8 +5,6 @@ using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers;
 
@@ -84,7 +82,7 @@ public class GamesController : BaseApiController
             return BadRequest(ModelState);
         }
 
-        input.AccountId = 2;//tmp
+        input.AccountId = await _loggedUserService.GetLoggedUserId(User);
         var result = await _gamesService.Get(input);
 
         if (result.IsError)

@@ -4,7 +4,6 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
 {
     public class TwoValuesEventBetInput
     {
-        public long AccountId { get; set; }
         public long? EventBetId { get; set; }
         public long GameId { get; set; }
         public int Value1 { get; set; }
@@ -12,5 +11,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
 
         [JsonIgnore]
         public long EventId { get; set; }
+        [JsonIgnore]
+        public long AccountId { get; set; }
     }
 }
