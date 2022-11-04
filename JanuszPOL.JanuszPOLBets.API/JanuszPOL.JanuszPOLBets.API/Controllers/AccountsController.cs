@@ -69,4 +69,14 @@ public class AccountsController : BaseApiController
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpGet("data")]
+    public async Task<ActionResult<ServiceResult<AccountResult>>> GetUserData()
+    {
+        return await MethodWrapper(async () =>
+        {
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            return await _accountService.GetUserData(username);
+        });
+    }
 }

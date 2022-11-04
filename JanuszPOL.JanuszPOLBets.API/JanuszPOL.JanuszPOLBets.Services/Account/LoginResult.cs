@@ -1,15 +1,13 @@
 ﻿namespace JanuszPOL.JanuszPOLBets.Services.Account;
 
-public class LoginResult
+public class AccountResult
 {
-    public LoginResult(string token, string username, bool isAdmin)
-    {
-        Token = token;
-        Username = username;
-        IsAdmin = isAdmin;
-    }
+    public string Username { get; set; }
+    public bool IsAdmin { get; set; }
+}
 
-    public string Token { get; }
-    public string Username { get; }
-    public bool IsAdmin { get; }
+public class LoginResult : AccountResult
+{
+    public string Token { get; set; }
+    public DateTime ExpiresAt { get; set; }
 }

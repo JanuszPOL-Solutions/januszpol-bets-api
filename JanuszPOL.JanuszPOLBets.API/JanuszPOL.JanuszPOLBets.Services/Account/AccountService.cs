@@ -8,131 +8,156 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JanuszPOL.JanuszPOLBets.Services.Account
+namespace JanuszPOL.JanuszPOLBets.Services.Account;
+
+public interface IAccountService
 {
-    public interface IAccountService
+    Task<ServiceResult> RegisterUser(RegisterDto registerDto);
+    Task<ServiceResult> RegisterAdmin(RegisterDto registerDto);
+    Task<ServiceResult<LoginResult>> Login(LoginDto loginDto);
+    Task<ServiceResult<AccountResult>> GetUserData(string username);
+}
+
+public class AccountService : IAccountService
+{
+    private readonly UserManager<Data.Entities.Account> _userManager;
+    private readonly RoleManager<IdentityRole<long>> _roleManager;
+    private readonly IConfiguration _configuration; //wrong
+
+    public AccountService(UserManager<Data.Entities.Account> userManager,
+        RoleManager<IdentityRole<long>> roleManager, IConfiguration configuration)
     {
-        Task<ServiceResult> RegisterUser(RegisterDto registerDto);
-        Task<ServiceResult> RegisterAdmin(RegisterDto registerDto);
-        Task<ServiceResult<LoginResult>> Login(LoginDto loginDto);
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _configuration = configuration;
     }
-    
-    public class AccountService : IAccountService
+
+    public async Task<ServiceResult> RegisterUser(RegisterDto registerDto)
     {
-        private readonly UserManager<Data.Entities.Account> _userManager;
-        private readonly RoleManager<IdentityRole<long>> _roleManager;
-        private readonly IConfiguration _configuration;
-
-        public AccountService(UserManager<Data.Entities.Account> userManager,
-            RoleManager<IdentityRole<long>> roleManager, IConfiguration configuration)
+        var userExists = await _userManager.FindByNameAsync(registerDto.Username);
+        if (userExists != null)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _configuration = configuration;
+            return ServiceResult.WithErrors("User already exists!");
         }
 
-        public async Task<ServiceResult> RegisterUser(RegisterDto registerDto)
+        Data.Entities.Account account = new()
         {
-            var userExists = await _userManager.FindByNameAsync(registerDto.Username);
-            if (userExists != null)
-            {
-                return ServiceResult.WithErrors("User already exists!");
-            }
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = registerDto.Username
+        };
+        var result = await _userManager.CreateAsync(account, registerDto.Password);
+        return !result.Succeeded
+            ? ServiceResult.WithErrors("User creation failed! Please check user details and try again.")
+            : ServiceResult.WithSuccess();
+    }
 
-            Data.Entities.Account account = new()
+    public async Task<ServiceResult> RegisterAdmin(RegisterDto registerDto)
+    {
+        var userExists = await _userManager.FindByNameAsync(registerDto.Username);
+        if (userExists != null)
+        {
+            return ServiceResult.WithErrors("User already exists!");
+        }
+
+        Data.Entities.Account account = new()
+        {
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = registerDto.Username
+        };
+
+        var result = await _userManager.CreateAsync(account, registerDto.Password);
+        if (!result.Succeeded)
+        {
+            return ServiceResult.WithErrors("User creation failed! Please check user details and try again.");
+        }
+
+        if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
+        {
+            await _roleManager.CreateAsync(new IdentityRole<long>(UserRoles.Admin));
+        }
+
+        if (!await _roleManager.RoleExistsAsync(UserRoles.User))
+        {
+            await _roleManager.CreateAsync(new IdentityRole<long>(UserRoles.User));
+        }
+
+        if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+        {
+            await _userManager.AddToRoleAsync(account, UserRoles.Admin);
+        }
+        if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+        {
+            await _userManager.AddToRoleAsync(account, UserRoles.User);
+        }
+
+        return ServiceResult.WithSuccess();
+    }
+
+    //i think it can be better
+    public async Task<ServiceResult<LoginResult>> Login(LoginDto loginDto)
+    {
+        var account = await _userManager.FindByNameAsync(loginDto.UserName);
+        if (account != null && await _userManager.CheckPasswordAsync(account, loginDto.Password))
+        {
+
+            var authClaims = new List<Claim>
             {
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = registerDto.Username
+                new Claim(ClaimTypes.Name, account.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-            var result = await _userManager.CreateAsync(account, registerDto.Password);
-            return !result.Succeeded
-                ? ServiceResult.WithErrors("User creation failed! Please check user details and try again.")
-                : ServiceResult.WithSuccess();
+
+            var userRoles = await _userManager.GetRolesAsync(account);
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            var isAdmin = userRoles.Any(x => x == UserRoles.Admin);
+            var token = GetToken(authClaims);
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            return ServiceResult<LoginResult>.WithSuccess(new LoginResult
+            {
+                Token = tokenString,
+                Username = account.UserName,
+                IsAdmin = isAdmin,
+                ExpiresAt = token.ValidTo
+            });
         }
 
-        public async Task<ServiceResult> RegisterAdmin(RegisterDto registerDto)
+        return ServiceResult<LoginResult>.WithErrors("Username or password incorrect");
+    }
+
+    public async Task<ServiceResult<AccountResult>> GetUserData(string username)
+    {
+        var account = await _userManager.FindByNameAsync(username);
+        if (account == null)
         {
-            var userExists = await _userManager.FindByNameAsync(registerDto.Username);
-            if (userExists != null)
-            {
-                return ServiceResult.WithErrors("User already exists!");
-            }
-
-            Data.Entities.Account account = new()
-            {
-                SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = registerDto.Username
-            };
-
-            var result = await _userManager.CreateAsync(account, registerDto.Password);
-            if (!result.Succeeded)
-            {
-                return ServiceResult.WithErrors("User creation failed! Please check user details and try again.");
-            }
-
-            if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
-            {
-                await _roleManager.CreateAsync(new IdentityRole<long>(UserRoles.Admin));
-            }
-
-            if (!await _roleManager.RoleExistsAsync(UserRoles.User))
-            {
-                await _roleManager.CreateAsync(new IdentityRole<long>(UserRoles.User));
-            }
-
-            if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
-            {
-                await _userManager.AddToRoleAsync(account, UserRoles.Admin);
-            }
-            if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
-            {
-                await _userManager.AddToRoleAsync(account, UserRoles.User);
-            }
-
-            return ServiceResult.WithSuccess();
+            return ServiceResult<AccountResult>.WithErrors("Użytkownik nie istnieje");
         }
 
-        public async Task<ServiceResult<LoginResult>> Login(LoginDto loginDto)
+        var userRoles = await _userManager.GetRolesAsync(account);
+        var isAdmin = userRoles.Any(x => x == UserRoles.Admin);
+
+        return ServiceResult<AccountResult>.WithSuccess(new AccountResult
         {
-            var account = await _userManager.FindByNameAsync(loginDto.UserName);
-            if (account != null && await _userManager.CheckPasswordAsync(account, loginDto.Password))
-            {
-                var userRoles = await _userManager.GetRolesAsync(account);
+            Username = username,
+            IsAdmin = isAdmin
+        });
+    }
 
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, account.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
+    private JwtSecurityToken GetToken(IList<Claim> authClaims)
+    {
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                }
+        var token = new JwtSecurityToken(
+            issuer: _configuration["JWT:ValidIssuer"],
+            audience: _configuration["JWT:ValidAudience"],
+            expires: DateTime.Now.AddHours(3),
+            claims: authClaims,
+            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+        );
 
-                var isAdmin = userRoles.Any(x => x == UserRoles.Admin);
-                var token = GetToken(authClaims);
-
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-                return ServiceResult<LoginResult>.WithSuccess(new LoginResult(tokenString, account.UserName, isAdmin));
-            }
-
-            return ServiceResult<LoginResult>.WithErrors("Username or password incorrect");
-        }
-
-        private JwtSecurityToken GetToken(IList<Claim> authClaims)
-        {
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddHours(3),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
-
-            return token;
-        }
+        return token;
     }
 }
