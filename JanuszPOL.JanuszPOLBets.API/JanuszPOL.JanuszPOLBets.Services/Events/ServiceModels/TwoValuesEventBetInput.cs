@@ -2,11 +2,15 @@
 
 namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
 {
-    public class BaseEventBetInput
+    public class TwoValuesEventBetInput
     {
+        public long? EventBetId { get; set; }
         public long GameId { get; set; }
-        public BaseBetType BetType { get; set; }
+        public int Value1 { get; set; }
+        public int Value2 { get; set; }
 
+        [JsonIgnore]
+        public long EventId { get; set; }
         [JsonIgnore]
         public long AccountId { get; set; }
     }

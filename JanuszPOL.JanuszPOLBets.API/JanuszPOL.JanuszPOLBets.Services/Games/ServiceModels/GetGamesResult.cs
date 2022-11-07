@@ -16,6 +16,6 @@ public class GetGamesResult
     public int Phase { get; set; }
     public int? Result { get; set; }
 
-    public EventDto ResultEvent { get; set; }
+    public GameEventBetDto ResultEvent { get; set; }
     public int EventsBetedCount { get; set; }
 }

@@ -106,11 +106,11 @@ public class GamesRepository : IGamesRepository
                 Team2Score = x.Team2Score,
                 Phase = (int)x.PhaseId,
                 ResultEventBet = x.EventBets
-                    .Where(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
+                    .Where(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId == EventType.RuleType.BaseBet)
                     .Select(x => x.EventId)
                     .FirstOrDefault(),
                 EventsBetedCount = x.EventBets
-                    .Count(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId != (int)EventType.RuleType.BaseBet)
+                    .Count(y => y.AccountId == dto.AccountId && !y.IsDeleted && y.Event.EventTypeId != EventType.RuleType.BaseBet)
             })
             .ToArrayAsync();
 
@@ -135,11 +135,13 @@ public class GamesRepository : IGamesRepository
             .FirstAsync(x => x.Id == gameId);
 
         var listSelectedEvents = await _db.EventBet
+            .Where(x => !x.IsDeleted)
             .Where(x => x.GameId == gameId)
             .Where(x => x.AccountId == accountId)
-            .Select(x => new EventDto
+            .Select(x => new GameEventBetDto
             {
                 Id = x.Id,
+                EventId = x.EventId,
                 BetCost = x.Event.BetCost,
                 EventTypeId = x.Event.EventTypeId,
                 GainedPoints = x.Result == true ? x.Event.WinValue : 0,
@@ -148,17 +150,17 @@ public class GamesRepository : IGamesRepository
                 Team2Score = x.Value2
             }).ToListAsync();
 
-        var resultEvent = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == (int)EventType.RuleType.BaseBet);
-        if (resultEvent != null) //tmp
+        var resultEventBet = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == EventType.RuleType.BaseBet);
+        if (resultEventBet != null) //tmp
         {
-            resultEvent.MatchResult = resultEvent.Id;
+            resultEventBet.MatchResult = resultEventBet.EventId;
         }
 
-        var exactScoreEvent = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == (int)EventType.RuleType.TwoExactValues);
+        var exactScoreEvent = listSelectedEvents.FirstOrDefault(x => x.EventTypeId == EventType.RuleType.TwoExactValues);
 
         listSelectedEvents = listSelectedEvents
-            .Where(x => x.EventTypeId != (int)EventType.RuleType.BaseBet)
-            .Where(x => x.EventTypeId != (int)EventType.RuleType.TwoExactValues) //tmp
+            .Where(x => x.EventTypeId != EventType.RuleType.BaseBet)
+            .Where(x => x.EventTypeId != EventType.RuleType.TwoExactValues) //tmp
             .ToList();
 
         var gameDto = new SingleGameDto
@@ -177,7 +179,7 @@ public class GamesRepository : IGamesRepository
             PhaseId = game.PhaseId,
             GameResultId = game.GameResultId,
             ExactScoreEvent = exactScoreEvent,
-            ResultEvent = resultEvent,
+            ResultEvent = resultEventBet,
             SelectedEvents = listSelectedEvents,
             Started = DateTime.Now > game.GameDate
         };

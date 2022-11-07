@@ -1,17 +1,22 @@
 ﻿using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
+using JanuszPOL.JanuszPOLBets.Services.Games;
+using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
 {
-    
+    [AllowAnonymous]
     public class AdminController : BaseApiController
     {
         private readonly IEventService _eventService;
+        private readonly IGamesService _gamesService;
 
-        public AdminController(IEventService eventService)
+        public AdminController(IEventService eventService, IGamesService gamesService)
         {
             _eventService = eventService;
+            _gamesService = gamesService;
         }
 
         [HttpPut("match-result")]
@@ -36,6 +41,23 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             {
                 return await _eventService.UpdateBoolEvent(gameId, eventId, eventHappened);
             });
+        }
+
+        [HttpPost("add-game")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddGame([FromBody] AddGameInput gameInput)
+        {
+            if (!TryValidateModel(gameInput))
+            {
+                return BadRequest(ModelState);
+            }
+            if (!await _gamesService.AddGame(gameInput))
+            {
+                return BadRequest("No team found with given ID");
+            }
+
+            return Ok();
         }
     }
 }

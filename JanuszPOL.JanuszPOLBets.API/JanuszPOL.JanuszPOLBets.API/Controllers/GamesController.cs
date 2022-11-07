@@ -5,8 +5,6 @@ using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers;
 
@@ -21,25 +19,6 @@ public class GamesController : BaseApiController
         _gamesService = gamesService;
         _loggedUserService = loggedUserService;
     }
-
-
-    [HttpPost("admin/add-game")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> AddGame([FromBody] AddGameInput gameInput)
-    {
-        if (!TryValidateModel(gameInput))
-        {
-            return BadRequest(ModelState);
-        }
-        if (!await _gamesService.AddGame(gameInput))
-        {
-            return BadRequest("No team found with given ID");
-        }
-
-        return Ok();
-    }
-
 
     [HttpGet("all")]
     [Obsolete("Dont use that, use GetGames")]
@@ -71,7 +50,7 @@ public class GamesController : BaseApiController
             return BadRequest(ModelState);
         }
 
-        input.AccountId = 2;//tmp
+        input.AccountId = await _loggedUserService.GetLoggedUserId(User);
         var result = await _gamesService.Get(input);
 
         if (result.IsError)

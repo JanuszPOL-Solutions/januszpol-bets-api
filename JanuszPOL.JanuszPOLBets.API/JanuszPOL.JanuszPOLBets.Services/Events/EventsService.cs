@@ -14,16 +14,19 @@ namespace JanuszPOL.JanuszPOLBets.Services.Events;
 public interface IEventService
 {
     Task<ServiceResult<IList<GetEventsResult>>> GetEvents();
-    Task<ServiceResult> AddEventBet(EventBetInput eventBetInput);
-    Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> AddEventBet(EventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput);
+    Task<ServiceResult<GameEventBetDto>> AddBoolEventBet(BoolBetInput eventBetInput);
     Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput);
-    Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput);
-    Task<ServiceResult> DeleteEventBet(long betId);
+    Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput);
+    Task<ServiceResult> DeleteEventBet(long betId, long accountId);
     Task<ServiceResult<UserScore>> GetUserScore(long accountId);
     Task<ServiceResult<IEnumerable<EventBet>>> GetUserBetsForGame(long accountId, long gameId);
     Task<ServiceResult> UpdateMatchResults(long gameId, int Team1Score, int Team2Score);
     Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened);
 
+    Task<ServiceResult<RankingDto>> GetFullRanking();
 }
 
 public class EventsService : IEventService
@@ -38,18 +41,18 @@ public class EventsService : IEventService
         _gamesRepository = gamesRepository;
     }
 
-    public async Task<ServiceResult> AddEventBet(EventBetInput eventBetInput)
+    public async Task<ServiceResult<GameEventBetDto>> AddEventBet(EventBetInput eventBetInput)
     {
         var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
         if (!IsEventBetValid(eventBetInput, eventToBet, out string message))
         {
-            return ServiceResult.WithErrors($"Error when validating the bet, {message}");
+            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
         }
 
         var existingBets = await _eventsRepository.GetEventBetsForGameAndUser(eventBetInput.GameId, eventBetInput.AccountId);
         ExistingEventBetDto? editedBet = null;
 
-        if (existingBets != null)
+        if (!eventBetInput.IsBaseBet && existingBets != null)
         {
             editedBet = existingBets.SingleOrDefault(x => x.EventId == eventBetInput.EventId);
 
@@ -59,13 +62,18 @@ public class EventsService : IEventService
 
             if (nonBaseBetCount >= MaxBetsPerAccountAndGame && editedBet == null)
             {
-                return ServiceResult.WithErrors($"User cannot have more than {MaxBetsPerAccountAndGame} bets per game");
+                return ServiceResult<GameEventBetDto>.WithErrors($"User cannot have more than {MaxBetsPerAccountAndGame} bets per game");
             }
+        }
+
+        if (eventBetInput.IsBaseBet && existingBets != null)
+        {
+            editedBet = existingBets.SingleOrDefault(x => x.EventType == Data.Entities.Events.EventType.RuleType.BaseBet);
         }
 
         if (editedBet == null)
         {
-            await _eventsRepository.AddEventBet(new AddEventBetDto
+            var addEventBetResult = await _eventsRepository.AddEventBet(new AddEventBetDto
             {
                 AccountId = eventBetInput.AccountId,
                 EventId = eventBetInput.EventId,
@@ -74,20 +82,20 @@ public class EventsService : IEventService
                 Value2 = eventBetInput.Value2
             });
 
-            return ServiceResult.WithSuccess();
+            return ServiceResult<GameEventBetDto>.WithSuccess(addEventBetResult);
         }
 
-        await _eventsRepository.UpdateEventBet(new ExistingEventBetDto
+        var editEventBetResult = await _eventsRepository.UpdateEventBet(new ExistingEventBetDto
         {
             EventBetId = editedBet.EventBetId,
             AccountId = editedBet.AccountId,
-            EventId = editedBet.EventId,
-            GameId = editedBet.GameId,
+            EventId = eventBetInput.EventId,
+            GameId = eventBetInput.GameId,
             Value1 = eventBetInput.Value1,
             Value2 = eventBetInput.Value2
         });
 
-        return ServiceResult.WithSuccess();
+        return ServiceResult<GameEventBetDto>.WithSuccess(editEventBetResult);
     }
 
     public async Task<ServiceResult<IList<GetEventsResult>>> GetEvents()
@@ -102,16 +110,35 @@ public class EventsService : IEventService
                 Name = x.Name,
                 Id = x.Id,
                 WinValue = x.WinValue,
-                EventType = GetEventsResult.TranslateEventType(x.EventType)
+                EventType = x.EventType
             }).ToList());
     }
 
-    public async Task<ServiceResult> AddBaseEventBet(BaseEventBetInput eventBetInput)
+    public async Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput)
+    {
+        //TODO: add more- validation
+        if (eventBetInput.Value1 < 0 || eventBetInput.Value2 < 0)
+        {
+            return ServiceResult<GameEventBetDto>.WithErrors("Scores can't be negative");
+        }
+
+        return await AddEventBet(new EventBetInput
+        {
+            AccountId = eventBetInput.AccountId,
+            EventId = eventBetInput.EventId,
+            GameId = eventBetInput.GameId,
+            Value1 = eventBetInput.Value1,
+            Value2 = eventBetInput.Value2
+        });
+    }
+
+    public async Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput)
     {
         var betInput = new EventBetInput
         {
             AccountId = eventBetInput.AccountId,
-            GameId = eventBetInput.GameId
+            GameId = eventBetInput.GameId,
+            IsBaseBet = true
         };
 
         long eventId = 0;
@@ -129,12 +156,24 @@ public class EventsService : IEventService
                 break;
 
             default:
-                return ServiceResult.WithErrors($"Invalid bet type {eventBetInput.BetType}");
+                return ServiceResult<GameEventBetDto>.WithErrors($"Invalid bet type {eventBetInput.BetType}");
         }
 
         betInput.EventId = eventId;
 
         return await AddEventBet(betInput);
+    }
+
+    public async Task<ServiceResult<GameEventBetDto>> AddBoolEventBet(BoolBetInput eventBetInput)
+    {
+        var input = new EventBetInput
+        {
+            AccountId = eventBetInput.AccountId,
+            EventId = eventBetInput.EventId,
+            GameId = eventBetInput.GameId
+        };
+
+        return await AddEventBet(input);
     }
 
     public async Task<ServiceResult> AddBaseEventBetResult(BaseEventBetResultInput baseEventBetResultInput)
@@ -192,16 +231,26 @@ public class EventsService : IEventService
         });
     }
 
-    public async Task<ServiceResult> AddEventBetResult(EventBetInput eventBetInput)
+    public async Task<ServiceResult<RankingDto>> GetFullRanking()
     {
-        if (true)
-        {
-            return ServiceResult.WithErrors("Method not implemented, only base bets are available now");
-        }
+        var ranking = await _eventsRepository.GetFullRanking();
+
+        return ServiceResult<RankingDto>.WithSuccess(ranking);
+    }
+
+    public async Task<ServiceResult> AddEventBetResult(EventBetResultInput eventBetInput)
+    {
+        // Right now we're supporting only couple of even types
+        var supportedEventIds = new long[] { 4, 5, 9 };
 
         if (IsBaseBetEventId(eventBetInput.EventId))
         {
             return ServiceResult.WithErrors("For base bet results use different endpoint");
+        }
+
+        if (!supportedEventIds.Any(x => x == eventBetInput.EventId))
+        {
+            return ServiceResult.WithErrors("Event type result not supported yet");
         }
 
         var bets = await _eventsRepository.GetBetsForGame(eventBetInput.GameId);
@@ -211,20 +260,33 @@ public class EventsService : IEventService
             return ServiceResult.WithSuccess();
         }
 
-
-
         var eventBets = bets.Where(x => x.EventId == eventBetInput.EventId);
+
+        if (eventBets == null)
+        {
+            return ServiceResult.WithSuccess();
+        }
+
+        await _eventsRepository.AddEventBetResult(new AddEventBetResultDto
+        {
+            EventBetIds = eventBets.Select(x => x.EventBetId)
+        });
 
         return ServiceResult.WithSuccess();
     }
 
-    public async Task<ServiceResult> DeleteEventBet(long betId)
+    public async Task<ServiceResult> DeleteEventBet(long betId, long accountId)
     {
-        var existingBet = await _eventsRepository.GetEventBet(betId);
+        var existingBet = await _eventsRepository.GetEventBet(betId, accountId);
+
+        if (existingBet == null)
+        {
+            return ServiceResult.WithErrors("Wybrany zakład nie istnieje.");
+        }
 
         if (IsBaseBetEventId(existingBet.EventId))
         {
-            return ServiceResult.WithErrors("Base bets cannot be deleted");
+            return ServiceResult.WithErrors("Zakład rezultatu meczu nie może być usunięty");
         }
 
         try
@@ -233,7 +295,7 @@ public class EventsService : IEventService
         }
         catch (Exception e)
         {
-            return ServiceResult.WithErrors($"Error when deleting event bet, {e}");
+            return ServiceResult.WithErrors($"Wystąpił wyjątek w trakcie usuwania zakładu, {e}");
         }
 
         return ServiceResult.WithSuccess();
@@ -255,7 +317,7 @@ public class EventsService : IEventService
             BetId = x.EventBetId,
             Description = x.EventDescription,
             Name = x.EventName,
-            EventType = GetEventsResult.TranslateEventType(x.EventType),
+            EventType = x.EventType,
             Value1 = x.Value1,
             Value2 = x.Value2
         }));
@@ -265,8 +327,8 @@ public class EventsService : IEventService
     {
         message = string.Empty;
 
-        if (eventToBet.EventType == Repository.Events.Dto.EventType.Boolean ||
-            eventToBet.EventType == Repository.Events.Dto.EventType.BaseBet)
+        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.Boolean ||
+            eventToBet.EventType == Data.Entities.Events.EventType.RuleType.BaseBet)
         {
             if (eventBetInput.Value1.HasValue || eventBetInput.Value2.HasValue)
             {
@@ -275,7 +337,7 @@ public class EventsService : IEventService
             }
         }
 
-        if (eventToBet.EventType == Repository.Events.Dto.EventType.ExactValue)
+        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.ExactValue)
         {
             if (!eventBetInput.Value1.HasValue)
             {
@@ -290,7 +352,7 @@ public class EventsService : IEventService
             }
         }
 
-        if (eventToBet.EventType == Repository.Events.Dto.EventType.TwoExactValues)
+        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.TwoExactValues)
         {
             if (!eventBetInput.Value1.HasValue || !eventBetInput.Value2.HasValue)
             {
@@ -329,8 +391,6 @@ public class EventsService : IEventService
     {
         try
         {
-            await _gamesRepository.ClearResultForGame(gameId);
-            await _eventsRepository.ClearEventResultForGame(gameId);
             await _gamesRepository.Update(new UpdateGameDto { Id = gameId, Team1Score = Team1Score, Team2Score = Team2Score });
             await _eventsRepository.UpdateBaseBet(gameId, Team1Score, Team2Score);
             await _eventsRepository.UpdateSingleExactBet(gameId, Team1Score,Team2Score);
@@ -346,7 +406,7 @@ public class EventsService : IEventService
     public async Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened)
     {
         var eventOfType = await _eventsRepository.GetEventById(eventId);
-        if(eventOfType.EventTypeId != (int)EventType.RuleType.Boolean)
+        if(eventOfType.EventTypeId != EventType.RuleType.Boolean)
         {
             return ServiceResult.WithErrors("Only events of type boolean");
         }

@@ -12,8 +12,6 @@ public interface IGamesService
     Task<ServiceResult<IList<GetGamesResult>>> GetAll();
     Task<bool> AddGame(AddGameInput gameInput);
     Task<ServiceResult<SingleGameDto>> GetGame(int gameId, long accountId);
-
-
 }
 
 public class GamesService : IGamesService

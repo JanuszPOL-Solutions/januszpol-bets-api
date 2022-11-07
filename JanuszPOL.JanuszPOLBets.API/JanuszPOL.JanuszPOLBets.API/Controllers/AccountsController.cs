@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mime;
+﻿using System.Net.Mime;
 using System.Security.Claims;
 using JanuszPOL.JanuszPOLBets.Repository.Account.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Account;
@@ -57,7 +56,7 @@ public class AccountsController : BaseApiController
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<ActionResult<ServiceResult<LoginResult>>> Login([FromBody] LoginDto loginDto)
     {
         var result = await _accountService.Login(loginDto);
 
@@ -66,8 +65,17 @@ public class AccountsController : BaseApiController
             return BadRequest(result.ErrorsMessage);
         }
 
-        var token = new JwtSecurityTokenHandler().WriteToken(result.Result);
-        return Ok(token);
+        return Ok(result);
     }
 
+    [Authorize]
+    [HttpGet("data")]
+    public async Task<ActionResult<ServiceResult<AccountResult>>> GetUserData()
+    {
+        return await MethodWrapper(async () =>
+        {
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            return await _accountService.GetUserData(username);
+        });
+    }
 }
