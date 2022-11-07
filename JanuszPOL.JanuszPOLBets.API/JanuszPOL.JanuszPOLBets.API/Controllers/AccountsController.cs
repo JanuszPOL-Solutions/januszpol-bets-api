@@ -78,4 +78,34 @@ public class AccountsController : BaseApiController
             return await _accountService.GetUserData(username);
         });
     }
+
+    [HttpPost("forget-password")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ForgetPassword(string username)
+    {
+        var result = await _accountService.ForgetPassword(username);
+        if(result.IsError)
+        {
+            return BadRequest(result.ErrorsMessage);
+        }
+        return Ok(result);
+    }
+
+    [HttpPost("reset-password")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordDto resetPasswordDto)
+    {
+        var result = await _accountService.ResetPassword(resetPasswordDto);
+        if (result.IsError)
+        {
+            return BadRequest(result.ErrorsMessage);
+        }
+        return Ok(result);
+    }
 }

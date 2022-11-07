@@ -16,6 +16,8 @@ public static class ApplicationServiceExtensions
         services.AddTransient<IAccountService, AccountService>();
         services.AddTransient<ILoggedUserService, LoggedUserService>();
         services.AddScoped<IEventService, EventsService>();
+        services.AddTransient<IMailService, MailService>();
+
 
         return services;
     }

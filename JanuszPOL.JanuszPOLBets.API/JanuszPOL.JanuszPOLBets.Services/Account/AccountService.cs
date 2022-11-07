@@ -5,6 +5,8 @@ using JanuszPOL.JanuszPOLBets.Data.Identity;
 using JanuszPOL.JanuszPOLBets.Repository.Account.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,6 +18,10 @@ public interface IAccountService
     Task<ServiceResult> RegisterAdmin(RegisterDto registerDto);
     Task<ServiceResult<LoginResult>> Login(LoginDto loginDto);
     Task<ServiceResult<AccountResult>> GetUserData(string username);
+    Task<ServiceResult> ForgetPassword(string username);
+    Task<ServiceResult> ResetPassword(ResetPasswordDto resetPasswordDto);
+
+
 }
 
 public class AccountService : IAccountService
@@ -23,14 +29,21 @@ public class AccountService : IAccountService
     private readonly UserManager<Data.Entities.Account> _userManager;
     private readonly RoleManager<IdentityRole<long>> _roleManager;
     private readonly IOptions<AuthConfiguration> _authOptions;
+    private readonly IConfiguration _configuration;
+    private readonly IMailService _mailService;
+
     public AccountService(
         UserManager<Data.Entities.Account> userManager,
         RoleManager<IdentityRole<long>> roleManager,
-        IOptions<AuthConfiguration> authOptions)
+        IOptions<AuthConfiguration> authOptions,
+        IConfiguration configuration,
+        IMailService mailService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _authOptions = authOptions;
+        _configuration = configuration;
+        _mailService = mailService;
     }
 
     public async Task<ServiceResult> RegisterUser(RegisterDto registerDto)
@@ -44,7 +57,8 @@ public class AccountService : IAccountService
         Data.Entities.Account account = new()
         {
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = registerDto.Username
+            UserName = registerDto.Username,
+            Email = registerDto.Email
         };
         var result = await _userManager.CreateAsync(account, registerDto.Password);
         return !result.Succeeded
@@ -161,4 +175,48 @@ public class AccountService : IAccountService
 
         return token;
     }
+
+    public async Task<ServiceResult> ForgetPassword(string username)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+
+        if (user == null)
+        {
+            return ServiceResult.WithErrors("No kolego kurwa, bez takich");
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = Encoding.UTF8.GetBytes(token);
+        var validToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+        string url = $"{_configuration["AppUrl"]}/ResetPassword?login={username}&token-{validToken}";
+
+        await _mailService.SendEmailAsync(user.Email, "Reset your password", $"<h1>You fool!</h1>" +
+                    $"<p>Reset password by <a href='{url}'>clicking here</a></p>");
+
+        return ServiceResult.WithSuccess();
+    }
+
+    public async Task<ServiceResult> ResetPassword(ResetPasswordDto resetPasswordDto)
+    {
+        var user = await _userManager.FindByNameAsync(resetPasswordDto.Login);
+        
+        if (user == null)
+        {
+            return ServiceResult.WithErrors("No user found");
+        }
+
+        if(resetPasswordDto.Password != resetPasswordDto.ConfirmPassword)
+        {
+            return ServiceResult.WithErrors("Passwords don't match!");
+        }
+
+        var decodedToken = WebEncoders.Base64UrlDecode(resetPasswordDto.Token);
+        var normalToken = Encoding.UTF8.GetString(decodedToken);
+        var result = await _userManager.ResetPasswordAsync(user, normalToken, resetPasswordDto.Password);
+
+        return result.Succeeded ? ServiceResult.WithSuccess() : ServiceResult.WithErrors("Check password rules");
+    }
+
+    
 }
