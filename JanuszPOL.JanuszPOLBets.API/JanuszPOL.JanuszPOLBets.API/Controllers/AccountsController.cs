@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mime;
+﻿using System.Net.Mime;
 using System.Security.Claims;
 using JanuszPOL.JanuszPOLBets.Repository.Account.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Account;
