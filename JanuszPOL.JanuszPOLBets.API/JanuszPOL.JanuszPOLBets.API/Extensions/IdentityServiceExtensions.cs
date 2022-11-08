@@ -20,6 +20,10 @@ public static class IdentityServiceExtensions
         const string authSection = "JWT";
         services.Configure<AuthConfiguration>(config.GetSection(authSection));
 
+        const string resetSection = "SendGrid";
+        services.Configure<ResetOptions>(config.GetSection(resetSection));
+
+
         // Adding Authentication
         services.AddAuthentication(options =>
             {

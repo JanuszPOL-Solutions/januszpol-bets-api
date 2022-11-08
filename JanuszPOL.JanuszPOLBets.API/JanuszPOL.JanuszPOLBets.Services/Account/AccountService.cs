@@ -29,21 +29,21 @@ public class AccountService : IAccountService
     private readonly UserManager<Data.Entities.Account> _userManager;
     private readonly RoleManager<IdentityRole<long>> _roleManager;
     private readonly IOptions<AuthConfiguration> _authOptions;
-    private readonly IConfiguration _configuration;
     private readonly IMailService _mailService;
+    private readonly IOptions<ResetOptions> _resetOptions;
 
     public AccountService(
         UserManager<Data.Entities.Account> userManager,
         RoleManager<IdentityRole<long>> roleManager,
         IOptions<AuthConfiguration> authOptions,
-        IConfiguration configuration,
-        IMailService mailService)
+        IMailService mailService,
+        IOptions<ResetOptions> resetOptions)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _authOptions = authOptions;
-        _configuration = configuration;
         _mailService = mailService;
+        _resetOptions = resetOptions;
     }
 
     public async Task<ServiceResult> RegisterUser(RegisterDto registerDto)
@@ -189,7 +189,7 @@ public class AccountService : IAccountService
         var encodedToken = Encoding.UTF8.GetBytes(token);
         var validToken = WebEncoders.Base64UrlEncode(encodedToken);
 
-        string url = $"{_configuration["AppUrl"]}/ResetPassword?login={username}&token-{validToken}";
+        string url = $"{_resetOptions.Value.AppUrl}/ResetPassword?login={username}&token-{validToken}";
 
         await _mailService.SendEmailAsync(user.Email, "Reset your password", $"<h1>You fool!</h1>" +
                     $"<p>Reset password by <a href='{url}'>clicking here</a></p>");

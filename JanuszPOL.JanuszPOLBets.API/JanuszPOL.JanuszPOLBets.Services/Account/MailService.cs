@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -10,17 +10,16 @@ namespace JanuszPOL.JanuszPOLBets.Services.Account
     }
     public class MailService : IMailService
     {
-        
-            private IConfiguration _configuration;
+        private readonly IOptions<ResetOptions> _resetOption;
 
-            public MailService(IConfiguration configuration)
-            {
-                _configuration = configuration;
-            }
+        public MailService(IOptions<ResetOptions> resetOption)
+        {
+            _resetOption = resetOption;
+        }
 
             public async Task SendEmailAsync(string toEmail, string subject, string content)
             {
-                var apiKey = _configuration["SendGridAPIKey"];
+                var apiKey = _resetOption.Value.SendGridAPIKey;
                 var client = new SendGridClient(apiKey);
                 var from = new EmailAddress("januszpol.eu@gmail.com", "JanuszPol Bet");
                 var to = new EmailAddress(toEmail);
