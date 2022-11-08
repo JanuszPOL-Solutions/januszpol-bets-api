@@ -32,6 +32,8 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         long Team2WinEventId { get; }
         long TieEventId { get; }
         Task<RankingDto> GetFullRanking();
+        Task<bool> ValidateBet(long accountId, long betId);
+
     }
 
     public class EventsRepository : IEventsRepository
@@ -366,6 +368,29 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         public async Task<Event> GetEventById(long eventId)
         {
             return await _dataContext.Event.SingleAsync(x => x.Id == eventId);
+        }
+
+        public async Task<bool> ValidateBet(long accountId, long betId)
+        {
+            var betCost = _dataContext.Event.First(x => x.Id == betId).BetCost;
+
+            var allEventBetsForUser = await _dataContext.EventBet
+                .Where(x => x.AccountId == accountId)
+                .Where(x => !x.IsDeleted)
+                .Select(x => new
+                {
+                    x.Event.WinValue,
+                    x.Event.BetCost,
+                    x.Result
+                })
+                .ToListAsync();
+
+            var userScore = allEventBetsForUser.Where(x => x.Result == true).Sum(x => x.WinValue) - allEventBetsForUser.Sum(x => x.BetCost);
+
+            if (userScore < betCost)
+                return false;
+            return true;
+                
         }
     }
 }
