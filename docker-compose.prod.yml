@@ -1,0 +1,64 @@
+services:
+  nginx-proxy:
+    restart: always
+    image: jwilder/nginx-proxy
+    container_name: "nginx-proxy"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - certsdata:/etc/nginx/certs
+      - vhostdata:/etc/nginx/vhost.d
+      - htmldata:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  nginx-proxy-acme:
+    restart: always
+    image: nginxproxy/acme-companion
+    environment:
+      NGINX_PROXY_CONTAINER: "nginx-proxy"
+      DEFAULT_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - acmedata:/etc/acme.sh
+      - certsdata:/etc/nginx/certs
+      - vhostdata:/etc/nginx/vhost.d
+      - htmldata:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - nginx-proxy
+  fronted:
+    depends_on:
+      - api
+    image: ${FRONT_IMAGE}
+    restart: unless-stopped 
+    environment:
+      VIRTUAL_HOST: ${FRONTEND_DOMAIN}
+      LETSENCRYPT_HOST: ${FRONTEND_DOMAIN}
+  api:
+    depends_on:
+      - db
+    image: ${API_IMAGE}
+    restart: unless-stopped 
+    environment:
+      VIRTUAL_HOST: ${API_DOMAIN}
+      LETSENCRYPT_HOST: ${API_DOMAIN}
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection}
+      JWT__ValidAudience: ${JWT__ValidAudience}
+      JWT__ValidIssuer: ${JWT__ValidIssuer}
+      JWT__Secret: ${JWT__Secret}
+  db:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    restart: unless-stopped 
+    user: root
+    volumes:
+      - sqldata:/var/opt/mssql/data
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+
+volumes:
+  certsdata:
+  vhostdata:
+  htmldata:
+  acmedata:
+  sqldata:
