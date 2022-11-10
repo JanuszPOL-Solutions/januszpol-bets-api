@@ -19,25 +19,7 @@ public class GamesController : BaseApiController
         _gamesService = gamesService;
         _loggedUserService = loggedUserService;
     }
-
-    [HttpGet("all")]
-    [Obsolete("Dont use that, use GetGames")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ServiceResult<IList<GetGamesResult>>>> GetAllGames()
-    {
-        var result = await _gamesService.GetAll();
-
-        if (result.IsError)
-        {
-            return BadRequest(result.ErrorsMessage);
-        }
-
-        return Ok(result);
-    }
-
+    
     [HttpGet("")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]
