@@ -32,7 +32,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         long Team2WinEventId { get; }
         long TieEventId { get; }
         Task<RankingDto> GetFullRanking();
-        Task<bool> ValidateBet(long accountId, long betId);
+        Task<bool> ValidateUserPointsForBet(long accountId, long betId);
 
     }
 
@@ -370,7 +370,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             return await _dataContext.Event.SingleAsync(x => x.Id == eventId);
         }
 
-        public async Task<bool> ValidateBet(long accountId, long betId)
+        public async Task<bool> ValidateUserPointsForBet(long accountId, long betId)
         {
             var betCost = _dataContext.Event.First(x => x.Id == betId).BetCost;
 
@@ -387,10 +387,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
 
             var userScore = allEventBetsForUser.Where(x => x.Result == true).Sum(x => x.WinValue) - allEventBetsForUser.Sum(x => x.BetCost);
 
-            if (userScore < betCost)
-                return false;
-            return true;
-                
+            return userScore >= betCost;
         }
     }
 }
