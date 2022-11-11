@@ -16,3 +16,19 @@
 ```
  C:\...\JanuszPOL.JanuszPOLBets.Data> dotnet ef migrations add AddTeams --startup-project="../JanuszPOL.JanuszPOLBets.API/JanuszPOL.JanuszPOLBets.API.csproj"
  ```
+
+# Production deploy
+
+create .env file and fill contents with actual production data
+```
+ConnectionStrings__DefaultConnection="Server=db;Database=Bets;User=sa;Password=dbpassword1;"
+JWT__ValidAudience="https://januszpol.eu"
+JWT__ValidIssuer="https://api.januszpol.eu"
+JWT__Secret="JWTAuthenticationHIGHsecuredPasswordVVVp1OH7Xzyr"
+SA_PASSWORD="dbpassword1"
+API_IMAGE="januszpol-bets-api:0.0.1"
+FRONT_IMAGE="januszpol-bets-frontend:0.0.2"
+ACME_EMAIL="jedrek@fijalkowscy.com"
+FRONTEND_DOMAIN="januszpol.eu"
+API_DOMAIN="api.januszpol.eu"
+```

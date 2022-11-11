@@ -7,7 +7,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Account.Dto
         [Required]
         public string Token { get; set; }
         [Required]
-        public string Login{ get; set; }
+        public string Username{ get; set; }
         [Required]
         public string Password { get; set; }
         [Required]

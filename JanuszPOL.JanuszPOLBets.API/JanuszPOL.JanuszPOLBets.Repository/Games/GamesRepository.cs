@@ -70,28 +70,29 @@ public class GamesRepository : IGamesRepository
             .Where(x => dto.Phase == null || x.PhaseId == dto.Phase.Value)
             .Where(x => dto.TeamIds == null || dto.TeamIds.Contains(x.Team1Id) || dto.TeamIds.Contains(x.Team2Id))
             .Where(x => dto.PhaseNames == null || dto.PhaseNames.Contains(x.PhaseName))
-            //.Where(x => dto.Beted == null ||
-            //    (dto.Beted == GetGameDto.BetState.NotBeted && //not beted
-            //        !x.EventBets
-            //            .Where(y => y.AccountId == dto.AccountId)
-            //            .Where(y => !y.IsDeleted)
-            //            .Where(y => y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
-            //            .Any()) ||
-            //    (dto.Beted == GetGameDto.BetState.Beted && //beted
-            //        x.EventBets
-            //                .Where(y => y.AccountId == dto.AccountId)
-            //                .Where(y => !y.IsDeleted)
-            //                .Where(y => y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
-            //                .Any()
-            //    ) ||
-            //    (dto.Beted == GetGameDto.BetState.ToBet &&
-            //        !x.EventBets
-            //                    .Where(y => y.AccountId == dto.AccountId)
-            //                    .Where(y => !y.IsDeleted)
-            //                    .Where(y => y.Event.EventTypeId == (int)EventType.RuleType.BaseBet)
-            //                    .Any() && x.GameDate > DateTime.Now
-            //    )
-            //)
+            .OrderBy(x => x.GameDate)
+            .Where(x => dto.Beted == null ||
+                (dto.Beted == GetGameDto.BetState.NotBeted && //not beted
+                    !x.EventBets
+                        .Where(y => y.AccountId == dto.AccountId)
+                        .Where(y => !y.IsDeleted)
+                        .Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet)
+                        .Any()) ||
+                (dto.Beted == GetGameDto.BetState.Beted && //beted
+                    x.EventBets
+                            .Where(y => y.AccountId == dto.AccountId)
+                            .Where(y => !y.IsDeleted)
+                            .Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet)
+                            .Any()
+                ) ||
+                (dto.Beted == GetGameDto.BetState.ToBet &&
+                    !x.EventBets
+                                .Where(y => y.AccountId == dto.AccountId)
+                                .Where(y => !y.IsDeleted)
+                                .Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet)
+                                .Any() && x.GameDate > DateTime.Now
+                )
+            )
             .Select(x => new GetGameResultDto
             {
                 Id = x.Id,

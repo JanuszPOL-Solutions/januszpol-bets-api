@@ -20,32 +20,42 @@ public static class IdentityServiceExtensions
         const string authSection = "JWT";
         services.Configure<AuthConfiguration>(config.GetSection(authSection));
 
-        const string resetSection = "SendGrid";
-        services.Configure<ResetOptions>(config.GetSection(resetSection));
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 6;
+            options.Password.RequiredUniqueChars = 1;
+        });
 
+        const string resetSection = "ResetPassword";
+        services.Configure<ResetOptions>(config.GetSection(resetSection));
 
         // Adding Authentication
         services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
 
-            // Adding Jwt Bearer
-            .AddJwtBearer(options =>
+        // Adding Jwt Bearer
+        .AddJwtBearer(options =>
+        {
+            options.SaveToken = true;
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters()
             {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = config[$"{authSection}:ValidAudience"],
-                    ValidIssuer = config[$"{authSection}:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config[$"{authSection}:Secret"]))
-                };
-            });
+
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidAudience = config[$"{authSection}:ValidAudience"],
+                ValidIssuer = config[$"{authSection}:ValidIssuer"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config[$"{authSection}:Secret"]))
+            };
+        });
 
         return services;
     }
