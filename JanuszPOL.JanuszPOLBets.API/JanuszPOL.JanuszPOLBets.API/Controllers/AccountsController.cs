@@ -23,16 +23,12 @@ public class AccountsController : BaseApiController
     [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+    public async Task<ActionResult<ServiceResult>> Register([FromBody] RegisterDto registerDto)
     {
-        var result = await _accountService.RegisterUser(registerDto);
-
-        if (result.IsError)
+        return await MethodWrapper(async () =>
         {
-            return BadRequest(result.ErrorsMessage);
-        }
-
-        return Ok(result);
+            return await _accountService.RegisterUser(registerDto);
+        });
     }
 
     [HttpPost("register-admin")]
@@ -40,17 +36,14 @@ public class AccountsController : BaseApiController
     [ProducesResponseType(typeof(ServiceResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterDto registerDto)
+    public async Task<ActionResult<ServiceResult>> RegisterAdmin([FromBody] RegisterDto registerDto)
     {
-        var result = await _accountService.RegisterAdmin(registerDto);
-
-        if (result.IsError)
+        return await MethodWrapper(async () =>
         {
-            return BadRequest(result.ErrorsMessage);
-        }
-
-        return Ok(result);
+            return await _accountService.RegisterAdmin(registerDto);
+        });
     }
+
     [HttpPost("login")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
