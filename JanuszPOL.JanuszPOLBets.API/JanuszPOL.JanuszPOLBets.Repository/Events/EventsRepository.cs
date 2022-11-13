@@ -1,4 +1,5 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
+using JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
@@ -44,9 +45,9 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         }
 
         // Let's just hardcode it here for now, later we should take it from DB
-        public long Team1WinEventId => 1;
-        public long Team2WinEventId => 2;
-        public long TieEventId => 3;
+        public long Team1WinEventId => EventMapping.TeamOneWinEventId;
+        public long Team2WinEventId => EventMapping.TeamTwoWinEventId;
+        public long TieEventId => EventMapping.TieEventId;
 
         public async Task<GameEventBetDto> AddEventBet(AddEventBetDto addEventBetDto)
         {
