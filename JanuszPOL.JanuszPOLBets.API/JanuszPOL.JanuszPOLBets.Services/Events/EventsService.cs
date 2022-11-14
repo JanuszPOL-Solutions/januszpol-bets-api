@@ -130,12 +130,6 @@ public class EventsService : IEventService
             Value2 = eventBetInput.Value2
         };
 
-        //var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
-        //if (!IsEventBetValid(input, eventToBet, out string message))
-        //{
-        //    return ServiceResult<GameEventBetDto>.WithErrors(message);
-        //}
-
         return await AddEventBet(input);
     }
 
@@ -179,12 +173,6 @@ public class EventsService : IEventService
             EventId = eventBetInput.EventId,
             GameId = eventBetInput.GameId
         };
-
-        //var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
-        //if (!IsEventBetValid(input, eventToBet, out string message))
-        //{
-        //    return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
-        //}
 
         return await AddEventBet(input);
     }
