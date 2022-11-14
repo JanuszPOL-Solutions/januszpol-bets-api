@@ -30,6 +30,9 @@ public static class IdentityServiceExtensions
             options.Password.RequiredUniqueChars = 1;
         });
 
+        const string resetSection = "ResetPassword";
+        services.Configure<ResetOptions>(config.GetSection(resetSection));
+
         // Adding Authentication
         services.AddAuthentication(options =>
         {

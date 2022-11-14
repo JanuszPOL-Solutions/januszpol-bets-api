@@ -334,7 +334,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         public async Task UpdateSingleExactBet(long gameId, int Team1Score, int Team2Score)
         {
             var score = Team1Score + Team2Score;
-            await _dataContext.EventBet.Where(x => x.GameId == gameId).Where(x => x.Event.Id == 7).ForEachAsync(x =>
+            await _dataContext.EventBet.Where(x => x.GameId == gameId).Where(x => x.EventId == 7).ForEachAsync(x =>
             {
                 var result = x.Value1 >= score;
                 x.Result = result;
@@ -345,7 +345,7 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
 
         public async Task UpdateBothExactBet(long gameId, int Team1Score, int Team2Score)
         {
-            await _dataContext.EventBet.Where(x => x.GameId == gameId).Where(x => x.Event.Id == 8).ForEachAsync(x =>
+            await _dataContext.EventBet.Where(x => x.GameId == gameId).Where(x => x.EventId == 8).ForEachAsync(x =>
             {
                 var result = x.Value1 == Team1Score && x.Value2 == Team2Score;
                 x.Result = result;
