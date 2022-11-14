@@ -1,5 +1,6 @@
 using JanuszPOL.JanuszPOLBets.API.Extensions;
 using JanuszPOL.JanuszPOLBets.Data._DbContext;
+using JanuszPOL.JanuszPOLBets.Repository.Events.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -40,6 +41,8 @@ builder.Services.AddSwaggerGen(c => {
         }
     });
 });
+
+builder.Services.Configure<BettingConfiguration>(builder.Configuration.GetSection("Betting"));
 
 builder.Services.RegisterDataContext(builder.Configuration);
 builder.Services.RegisterRepositories();

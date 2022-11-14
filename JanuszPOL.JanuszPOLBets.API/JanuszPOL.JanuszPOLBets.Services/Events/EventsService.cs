@@ -46,7 +46,7 @@ public class EventsService : IEventService
         var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
         if (!IsEventBetValid(eventBetInput, eventToBet, out string message))
         {
-            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
+            return ServiceResult<GameEventBetDto>.WithErrors(message);
         }
 
         var existingBets = await _eventsRepository.GetEventBetsForGameAndUser(eventBetInput.GameId, eventBetInput.AccountId);
@@ -68,7 +68,7 @@ public class EventsService : IEventService
 
         if (eventBetInput.IsBaseBet && existingBets != null)
         {
-            editedBet = existingBets.SingleOrDefault(x => x.EventType == Data.Entities.Events.EventType.RuleType.BaseBet);
+            editedBet = existingBets.SingleOrDefault(x => x.EventType == EventType.RuleType.BaseBet);
         }
 
         if (editedBet == null)
@@ -130,11 +130,11 @@ public class EventsService : IEventService
             Value2 = eventBetInput.Value2
         };
 
-        var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
-        if (!IsEventBetValid(input, eventToBet, out string message))
-        {
-            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
-        }
+        //var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
+        //if (!IsEventBetValid(input, eventToBet, out string message))
+        //{
+        //    return ServiceResult<GameEventBetDto>.WithErrors(message);
+        //}
 
         return await AddEventBet(input);
     }
@@ -180,11 +180,11 @@ public class EventsService : IEventService
             GameId = eventBetInput.GameId
         };
 
-        var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
-        if (!IsEventBetValid(input, eventToBet, out string message))
-        {
-            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
-        }
+        //var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
+        //if (!IsEventBetValid(input, eventToBet, out string message))
+        //{
+        //    return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
+        //}
 
         return await AddEventBet(input);
     }
@@ -340,8 +340,8 @@ public class EventsService : IEventService
     {
         message = string.Empty;
 
-        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.Boolean ||
-            eventToBet.EventType == Data.Entities.Events.EventType.RuleType.BaseBet)
+        if (eventToBet.EventType == EventType.RuleType.Boolean ||
+            eventToBet.EventType == EventType.RuleType.BaseBet)
         {
             if (eventBetInput.Value1.HasValue || eventBetInput.Value2.HasValue)
             {
@@ -350,7 +350,7 @@ public class EventsService : IEventService
             }
         }
 
-        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.ExactValue)
+        if (eventToBet.EventType == EventType.RuleType.ExactValue)
         {
             if (!eventBetInput.Value1.HasValue)
             {
@@ -365,7 +365,7 @@ public class EventsService : IEventService
             }
         }
 
-        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.TwoExactValues)
+        if (eventToBet.EventType == EventType.RuleType.TwoExactValues)
         {
             if (!eventBetInput.Value1.HasValue || !eventBetInput.Value2.HasValue)
             {
@@ -374,7 +374,8 @@ public class EventsService : IEventService
             }
         }
 
-        var enoughPoints = _eventsRepository.ValidateUserPointsForBet(eventBetInput.AccountId, eventBetInput.EventId);
+        var enoughPoints = _eventsRepository
+            .ValidateUserPointsForBet(eventBetInput.AccountId, eventBetInput.EventId, eventBetInput.GameId);
         if (!enoughPoints.Result)
         {
             message = "Niewystarczająca ilość punktów, żeby obstawić :(";
@@ -413,7 +414,7 @@ public class EventsService : IEventService
         {
             await _gamesRepository.Update(new UpdateGameDto { Id = gameId, Team1Score = Team1Score, Team2Score = Team2Score });
             await _eventsRepository.UpdateBaseBet(gameId, Team1Score, Team2Score);
-            await _eventsRepository.UpdateSingleExactBet(gameId, Team1Score,Team2Score);
+            await _eventsRepository.UpdateSingleExactBet(gameId, Team1Score, Team2Score);
             await _eventsRepository.UpdateBothExactBet(gameId, Team1Score, Team2Score);
         }
         catch (Exception ex)
@@ -426,7 +427,7 @@ public class EventsService : IEventService
     public async Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened)
     {
         var eventOfType = await _eventsRepository.GetEventById(eventId);
-        if(eventOfType.EventTypeId != EventType.RuleType.Boolean)
+        if (eventOfType.EventTypeId != EventType.RuleType.Boolean)
         {
             return ServiceResult.WithErrors("Only events of type boolean");
         }
