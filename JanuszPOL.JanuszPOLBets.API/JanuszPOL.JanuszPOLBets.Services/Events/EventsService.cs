@@ -116,20 +116,27 @@ public class EventsService : IEventService
 
     public async Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput)
     {
-        //TODO: add more- validation
         if (eventBetInput.Value1 < 0 || eventBetInput.Value2 < 0)
         {
             return ServiceResult<GameEventBetDto>.WithErrors("Scores can't be negative");
         }
 
-        return await AddEventBet(new EventBetInput
+        var input = new EventBetInput
         {
             AccountId = eventBetInput.AccountId,
             EventId = eventBetInput.EventId,
             GameId = eventBetInput.GameId,
             Value1 = eventBetInput.Value1,
             Value2 = eventBetInput.Value2
-        });
+        };
+
+        var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
+        if (!IsEventBetValid(input, eventToBet, out string message))
+        {
+            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
+        }
+
+        return await AddEventBet(input);
     }
 
     public async Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput)
@@ -172,6 +179,12 @@ public class EventsService : IEventService
             EventId = eventBetInput.EventId,
             GameId = eventBetInput.GameId
         };
+
+        var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
+        if (!IsEventBetValid(input, eventToBet, out string message))
+        {
+            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
+        }
 
         return await AddEventBet(input);
     }
@@ -359,6 +372,13 @@ public class EventsService : IEventService
                 message = "For 2 exact values bet you need to provide both values";
                 return false;
             }
+        }
+
+        var enoughPoints = _eventsRepository.ValidateUserPointsForBet(eventBetInput.AccountId, eventBetInput.EventId);
+        if (!enoughPoints.Result)
+        {
+            message = "Niewystarczająca ilość punktów, żeby obstawić :(";
+            return false;
         }
 
         return true;
