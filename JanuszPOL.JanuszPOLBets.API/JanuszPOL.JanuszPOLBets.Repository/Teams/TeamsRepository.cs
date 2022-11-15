@@ -22,6 +22,7 @@ public class TeamsRepository : ITeamsRepository
     public async Task<GetTeamResultDto[]> Get(GetTeamDto dto)
     {
         var teams = await _db.Teams
+            .OrderBy(x => x.Name)
             .Select(x => new GetTeamResultDto
             {
                 TeamId = x.Id,
