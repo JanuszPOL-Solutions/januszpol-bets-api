@@ -46,7 +46,7 @@ public class EventsService : IEventService
         var eventToBet = await _eventsRepository.GetEvent(eventBetInput.EventId);
         if (!IsEventBetValid(eventBetInput, eventToBet, out string message))
         {
-            return ServiceResult<GameEventBetDto>.WithErrors($"Error when validating the bet, {message}");
+            return ServiceResult<GameEventBetDto>.WithErrors(message);
         }
 
         var existingBets = await _eventsRepository.GetEventBetsForGameAndUser(eventBetInput.GameId, eventBetInput.AccountId);
@@ -68,7 +68,7 @@ public class EventsService : IEventService
 
         if (eventBetInput.IsBaseBet && existingBets != null)
         {
-            editedBet = existingBets.SingleOrDefault(x => x.EventType == Data.Entities.Events.EventType.RuleType.BaseBet);
+            editedBet = existingBets.SingleOrDefault(x => x.EventType == EventType.RuleType.BaseBet);
         }
 
         if (editedBet == null)
@@ -116,20 +116,21 @@ public class EventsService : IEventService
 
     public async Task<ServiceResult<GameEventBetDto>> Add2ValuesEventBet(TwoValuesEventBetInput eventBetInput)
     {
-        //TODO: add more- validation
         if (eventBetInput.Value1 < 0 || eventBetInput.Value2 < 0)
         {
             return ServiceResult<GameEventBetDto>.WithErrors("Scores can't be negative");
         }
 
-        return await AddEventBet(new EventBetInput
+        var input = new EventBetInput
         {
             AccountId = eventBetInput.AccountId,
             EventId = eventBetInput.EventId,
             GameId = eventBetInput.GameId,
             Value1 = eventBetInput.Value1,
             Value2 = eventBetInput.Value2
-        });
+        };
+
+        return await AddEventBet(input);
     }
 
     public async Task<ServiceResult<GameEventBetDto>> AddBaseEventBet(BaseEventBetInput eventBetInput)
@@ -351,7 +352,7 @@ public class EventsService : IEventService
             }
         }
 
-        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.ExactValue)
+        if (eventToBet.EventType == EventType.RuleType.ExactValue)
         {
             if (!eventBetInput.Value1.HasValue)
             {
@@ -366,13 +367,21 @@ public class EventsService : IEventService
             }
         }
 
-        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.TwoExactValues)
+        if (eventToBet.EventType == EventType.RuleType.TwoExactValues)
         {
             if (!eventBetInput.Value1.HasValue || !eventBetInput.Value2.HasValue)
             {
                 message = "For 2 exact values bet you need to provide both values";
                 return false;
             }
+        }
+
+        var enoughPoints = _eventsRepository
+            .ValidateUserPointsForBet(eventBetInput.AccountId, eventBetInput.EventId, eventBetInput.GameId);
+        if (!enoughPoints.Result)
+        {
+            message = "Niewystarczająca ilość punktów, żeby obstawić :(";
+            return false;
         }
 
         return true;
@@ -407,7 +416,7 @@ public class EventsService : IEventService
         {
             await _gamesRepository.Update(new UpdateGameDto { Id = gameId, Team1Score = Team1Score, Team2Score = Team2Score });
             await _eventsRepository.UpdateBaseBet(gameId, Team1Score, Team2Score);
-            await _eventsRepository.UpdateSingleExactBet(gameId, Team1Score,Team2Score);
+            await _eventsRepository.UpdateSingleExactBet(gameId, Team1Score, Team2Score);
             await _eventsRepository.UpdateBothExactBet(gameId, Team1Score, Team2Score);
         }
         catch (Exception ex)
@@ -420,7 +429,7 @@ public class EventsService : IEventService
     public async Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened)
     {
         var eventOfType = await _eventsRepository.GetEventById(eventId);
-        if(eventOfType.EventTypeId != EventType.RuleType.Boolean)
+        if (eventOfType.EventTypeId != EventType.RuleType.Boolean)
         {
             return ServiceResult.WithErrors("Only events of type boolean");
         }

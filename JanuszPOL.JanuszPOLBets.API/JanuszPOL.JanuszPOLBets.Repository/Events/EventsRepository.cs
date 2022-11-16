@@ -2,9 +2,11 @@
 using JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
+using JanuszPOL.JanuszPOLBets.Repository.Events.Configuration;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace JanuszPOL.JanuszPOLBets.Repository.Events
 {
@@ -33,15 +35,21 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         long Team2WinEventId { get; }
         long TieEventId { get; }
         Task<RankingDto> GetFullRanking();
+        Task<bool> ValidateUserPointsForBet(long accountId, long betId, long gameId);
+
     }
 
     public class EventsRepository : IEventsRepository
     {
         private readonly DataContext _dataContext;
+        private readonly IOptions<BettingConfiguration> _bettingConfiguration;
 
-        public EventsRepository(DataContext dataContext)
+        public EventsRepository(
+            DataContext dataContext,
+            IOptions<BettingConfiguration> bettingConfiguration)
         {
             _dataContext = dataContext;
+            _bettingConfiguration = bettingConfiguration;
         }
 
         // Let's just hardcode it here for now, later we should take it from DB
@@ -266,10 +274,13 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 {
                     Username = x.Key,
                     Score = //TODO: add base value
+                    _bettingConfiguration.Value.UserStartingPoints 
+                    +
                     x.Value.Where(y => y.Result == true).Sum(y => y.WinValue)
                     -
                     x.Value.Sum(y => y.BetCost)
-                });
+                })
+                .OrderByDescending(x => x.Score);
 
             return new RankingDto
             {
@@ -367,6 +378,35 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         public async Task<Event> GetEventById(long eventId)
         {
             return await _dataContext.Event.SingleAsync(x => x.Id == eventId);
+        }
+
+        public async Task<bool> ValidateUserPointsForBet(long accountId, long eventId, long gameId)
+        {
+            var modifingExistingBet = await _dataContext.EventBet
+                .Where(x => x.AccountId == accountId && x.EventId == eventId && x.GameId == gameId)
+                .AnyAsync();
+
+            if (modifingExistingBet)
+            {
+                return true;
+            }
+
+            var betCost = _dataContext.Event.First(x => x.Id == eventId).BetCost;
+
+            var allEventBetsForUser = await _dataContext.EventBet
+                .Where(x => x.AccountId == accountId)
+                .Where(x => !x.IsDeleted)
+                .Select(x => new
+                {
+                    x.Event.WinValue,
+                    x.Event.BetCost,
+                    x.Result
+                })
+                .ToListAsync();
+
+            var userScore = allEventBetsForUser.Where(x => x.Result == true).Sum(x => x.WinValue) - allEventBetsForUser.Sum(x => x.BetCost);
+
+            return _bettingConfiguration.Value.UserStartingPoints + userScore >= betCost;
         }
     }
 }
