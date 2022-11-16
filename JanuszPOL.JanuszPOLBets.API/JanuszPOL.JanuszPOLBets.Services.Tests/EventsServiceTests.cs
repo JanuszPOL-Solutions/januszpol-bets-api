@@ -190,13 +190,134 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
         }
 
         [Test]
-        public void EventBet_NewEventBetWorks() { }
+        public async Task EventBet_NewBooleanEventBetWorks() 
+        {
+            int accountId = 1;
+            int gameId = 1;
+            int eventBetId = 99;
+            int eventId = 5;
+
+            _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
+            {
+                BetCost = 1,
+                WinValue = 2,
+                Id = eventId,
+                EventType = RuleType.Boolean
+            }));
+
+            _eventsRepositoryMock
+                .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
+                .ReturnsAsync(await Task.FromResult(new List<ExistingEventBetDto>
+                {
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = 2,
+                        EventId = 1,
+                        EventBetId = 1
+                    },
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = 2,
+                        EventId = 4,
+                        EventBetId = 2
+                    }
+                }));
+
+            _eventsRepositoryMock.Setup(x => x.AddEventBet(It.Is<AddEventBetDto>(x =>
+                x.EventId == eventId &&
+                x.AccountId == accountId &&
+                x.GameId == gameId &&
+                x.Value1 == null &&
+                x.Value2 == null))).ReturnsAsync(await Task.FromResult(new Repository.Games.Dto.GameEventBetDto
+                {
+                    EventId = eventId,
+                    EventTypeId = Data.Entities.Events.EventType.RuleType.Boolean,
+                    Id = eventBetId
+                }));
+
+            _gamesRepositoryMock.Setup(x => x.GetGameById(gameId))
+                .ReturnsAsync(await Task.FromResult(new SingleGameDto
+                {
+                    Started = false
+                }));
+
+            var result = await _eventsService.AddEventBet(new EventBetInput
+            {
+                AccountId = accountId,
+                EventId = eventId,
+                GameId = gameId,
+                IsBaseBet = false
+            });
+
+            Assert.AreEqual(RuleType.Boolean, result.Result.EventTypeId);
+            Assert.AreEqual(eventId, result.Result.EventId);
+            Assert.AreEqual(eventBetId, result.Result.Id);
+        }
 
         [Test]
         public void EventBet_EditingEventBetWorks() { }
 
         [Test]
-        public void EventBet_CannotHaveMoreThanTwoEvents() { }
+        public async Task EventBet_CannotHaveMoreThanTwoEvents() 
+        {
+            int accountId = 1;
+            int gameId = 1;
+            int eventBetId = 99;
+            int eventId = 6;
+
+            _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
+            {
+                BetCost = 1,
+                WinValue = 2,
+                Id = eventId,
+                EventType = RuleType.Boolean
+            }));
+
+            _eventsRepositoryMock
+                .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
+                .ReturnsAsync(await Task.FromResult(new List<ExistingEventBetDto>
+                {
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = 2,
+                        EventId = 1,
+                        EventBetId = 1
+                    },
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = 2,
+                        EventId = 4,
+                        EventBetId = 2
+                    },
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = 2,
+                        EventId = 5,
+                        EventBetId = 2
+                    }
+                }));
+
+            _gamesRepositoryMock.Setup(x => x.GetGameById(gameId))
+                .ReturnsAsync(await Task.FromResult(new SingleGameDto
+                {
+                    Started = false
+                }));
+
+            var result = await _eventsService.AddEventBet(new EventBetInput
+            {
+                AccountId = accountId,
+                EventId = eventId,
+                GameId = gameId,
+                IsBaseBet = false
+            });
+
+            Assert.IsTrue(result.Errors.Count > 0);
+        }
 
         [Test]
         public void EventBet_CannotBetAnEventIfNoPointsLeft() { }
