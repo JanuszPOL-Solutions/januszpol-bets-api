@@ -120,7 +120,74 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
         }
 
         [Test]
-        public void BaseBetEditingWorks() { }
+        public async Task BaseBetEditingWorks() 
+        {
+            int accountId = 1;
+            int gameId = 1;
+            int baseEventBetId = 12;
+
+            _eventsRepositoryMock.Setup(x => x.GetEvent(EventMapping.TeamOneWinEventId)).ReturnsAsync(await Task.FromResult(new EventDto
+            {
+                BetCost = 0,
+                WinValue = 3,
+                Id = EventMapping.TeamOneWinEventId
+            }));
+            _eventsRepositoryMock.Setup(x => x.GetEvent(EventMapping.TeamTwoWinEventId)).ReturnsAsync(await Task.FromResult(new EventDto
+            {
+                BetCost = 0,
+                WinValue = 3,
+                Id = EventMapping.TeamTwoWinEventId
+            }));
+
+            _eventsRepositoryMock
+                .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
+                .ReturnsAsync(await Task.FromResult(new List<ExistingEventBetDto>
+                {
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = gameId,
+                        EventId = 5,
+                        EventBetId = 1
+                    },
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = gameId,
+                        EventId = EventMapping.TeamOneWinEventId,
+                        EventBetId = baseEventBetId
+                    }
+                }));
+
+            _eventsRepositoryMock.Setup(x => x.AddEventBet(It.Is<AddEventBetDto>(x =>
+                x.EventId == EventMapping.TeamTwoWinEventId &&
+                x.AccountId == accountId &&
+                x.GameId == gameId &&
+                x.Value1 == null &&
+                x.Value2 == null))).ReturnsAsync(await Task.FromResult(new Repository.Games.Dto.GameEventBetDto
+                {
+                    EventId = EventMapping.TeamTwoWinEventId,
+                    EventTypeId = Data.Entities.Events.EventType.RuleType.BaseBet,
+                    Id = baseEventBetId
+                }));
+
+            _gamesRepositoryMock.Setup(x => x.GetGameById(gameId))
+                .ReturnsAsync(await Task.FromResult(new SingleGameDto
+                {
+                    Started = false
+                }));
+
+            var result = await _eventsService.AddBaseEventBet(new BaseEventBetInput
+            {
+                AccountId = 1,
+                BetType = BaseBetType.Team2,
+                GameId = gameId
+            });
+
+            Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
+            Assert.AreEqual(EventMapping.TeamTwoWinEventId, result.Result.EventId);
+            Assert.AreEqual(baseEventBetId, result.Result.Id);
+        }
 
         [Test]
         public void EventBet_NewEventBetWorks() { }
