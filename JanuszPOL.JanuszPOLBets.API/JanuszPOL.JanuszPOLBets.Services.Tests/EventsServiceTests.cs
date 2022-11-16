@@ -1,4 +1,5 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings;
+using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Repository.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using JanuszPOL.JanuszPOLBets.Repository.Games;
@@ -85,6 +86,37 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
             Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
             Assert.AreEqual(eventId, result.Result.EventId);
             Assert.AreEqual(eventBetId, result.Result.Id);
+        }
+
+        [Test]
+        public async Task CannotPlaceBetAfteMatchStarted()
+        {
+            int accountId = 1;
+            int gameId = 1;
+            int eventBetId = 99;
+            int eventId = EventMapping.TeamOneWinEventId;
+
+            _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
+            {
+                BetCost = 0,
+                WinValue = 3,
+                Id = eventId
+            }));
+
+            _gamesRepositoryMock.Setup(x => x.GetGameById(gameId))
+                .ReturnsAsync(await Task.FromResult(new SingleGameDto
+                {
+                    Started = true
+                }));
+
+            var result = await _eventsService.AddBaseEventBet(new BaseEventBetInput
+            {
+                AccountId = 1,
+                BetType = BaseBetType.Team1,
+                GameId = gameId
+            });
+
+            Assert.IsTrue(result.Errors.Count > 0);
         }
 
         [Test]
