@@ -1,5 +1,4 @@
-﻿using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels
 {

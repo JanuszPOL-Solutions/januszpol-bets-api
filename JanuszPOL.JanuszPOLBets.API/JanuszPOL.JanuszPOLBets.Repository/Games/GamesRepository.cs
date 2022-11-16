@@ -14,7 +14,8 @@ public interface IGamesRepository
     Task Add(AddGameDto gameDto);
     Task Update(UpdateGameDto updateDto);
     Task ClearResultForGame(long gameId);
-    Task<SingleGameDto> GetGameById(int gameId, long accountId);
+    Task<SingleGameDto> GetGameById(long gameId);
+    Task<SingleGameWithEventsDto> GetGameWithEventsById(int gameId, long accountId);
 }
 
 public class GamesRepository : IGamesRepository
@@ -128,7 +129,33 @@ public class GamesRepository : IGamesRepository
         }).ToArrayAsync();
     }
 
-    public async Task<SingleGameDto> GetGameById(int gameId, long accountId)
+    public async Task<SingleGameDto> GetGameById(long gameId)
+    {
+        var game = await _db.Games
+            .Include(x => x.Team1)
+            .Include(x => x.Team2)
+            .FirstAsync(x => x.Id == gameId);
+
+        return new SingleGameDto
+        {
+            Id = game.Id,
+            Team1 = game.Team1.Name,
+            Team2 = game.Team2.Name,
+            GameDate = game.GameDate,
+            Team1Score = game.Team1Score,
+            Team2Score = game.Team2Score,
+            Team1ScoreExtraTime = game.Team1ScoreExtraTime,
+            Team2ScoreExtraTime = game.Team2ScoreExtraTime,
+            Team1ScorePenalties = game.Team1ScorePenalties,
+            Team2ScorePenalties = game.Team2ScorePenalties,
+            PhaseName = game.PhaseName,
+            PhaseId = game.PhaseId,
+            GameResultId = game.GameResultId,
+            Started = DateTime.Now > game.GameDate
+        };
+    }
+
+    public async Task<SingleGameWithEventsDto> GetGameWithEventsById(int gameId, long accountId)
     {
         var game = await _db.Games
             .Include(x => x.Team1)
@@ -164,7 +191,7 @@ public class GamesRepository : IGamesRepository
             .Where(x => x.EventTypeId != EventType.RuleType.TwoExactValues) //tmp
             .ToList();
 
-        var gameDto = new SingleGameDto
+        var gameDto = new SingleGameWithEventsDto
         {
             Id = game.Id,
             Team1 = game.Team1.Name,

@@ -2,6 +2,7 @@
 using JanuszPOL.JanuszPOLBets.Repository.Events;
 using JanuszPOL.JanuszPOLBets.Repository.Events.Dto;
 using JanuszPOL.JanuszPOLBets.Repository.Games;
+using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
 using Moq;
@@ -66,6 +67,12 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                     EventId = eventId,
                     EventTypeId = Data.Entities.Events.EventType.RuleType.BaseBet,
                     Id = eventBetId
+                }));
+
+            _gamesRepositoryMock.Setup(x => x.GetGameById(gameId))
+                .ReturnsAsync(await Task.FromResult(new SingleGameDto
+                {
+                    Started = false
                 }));
 
             var result = await _eventsService.AddBaseEventBet(new BaseEventBetInput
