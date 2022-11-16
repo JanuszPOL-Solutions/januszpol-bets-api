@@ -167,11 +167,13 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                         AccountId = accountId,
                         GameId = gameId,
                         EventId = EventMapping.TeamOneWinEventId,
-                        EventBetId = baseEventBetId
+                        EventBetId = baseEventBetId,
+                        EventType = RuleType.BaseBet
                     }
                 }));
 
-            _eventsRepositoryMock.Setup(x => x.AddEventBet(It.Is<AddEventBetDto>(x =>
+            _eventsRepositoryMock.Setup(x => x.UpdateEventBet(It.Is<ExistingEventBetDto>(x =>
+                x.EventBetId == baseEventBetId &&
                 x.EventId == EventMapping.TeamTwoWinEventId &&
                 x.AccountId == accountId &&
                 x.GameId == gameId &&
@@ -269,7 +271,83 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
         }
 
         [Test]
-        public void EventBet_EditingEventBetWorks() { }
+        public async Task EventBet_EditingEventBetWorks() 
+        {
+            int accountId = 1;
+            int gameId = 1;
+            int eventBetId = 12;
+            int eventId = 5;
+            int value1 = 2;
+            int value2 = 3;
+
+            _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
+            {
+                BetCost = 1,
+                WinValue = 2,
+                Id = eventId
+            }));
+
+            _eventsRepositoryMock
+                .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
+                .ReturnsAsync(await Task.FromResult(new List<ExistingEventBetDto>
+                {
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = gameId,
+                        EventId = eventId,
+                        EventBetId = eventBetId,
+                        EventType = RuleType.TwoExactValues
+                    },
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = gameId,
+                        EventId = 6,
+                        EventBetId = 22
+                    },
+                    new ExistingEventBetDto
+                    {
+                        AccountId = accountId,
+                        GameId = gameId,
+                        EventId = EventMapping.TeamOneWinEventId,
+                        EventBetId = 33
+                    }
+                }));
+
+            _eventsRepositoryMock.Setup(x => x.UpdateEventBet(It.Is<ExistingEventBetDto>(x =>
+                x.EventBetId == eventBetId &&
+                x.EventId == eventId &&
+                x.AccountId == accountId &&
+                x.GameId == gameId &&
+                x.Value1 == value1 &&
+                x.Value2 == value2))).ReturnsAsync(await Task.FromResult(new Repository.Games.Dto.GameEventBetDto
+                {
+                    EventId = EventMapping.TeamTwoWinEventId,
+                    EventTypeId = Data.Entities.Events.EventType.RuleType.BaseBet,
+                    Id = eventBetId
+                }));
+
+            _gamesRepositoryMock.Setup(x => x.GetGameById(gameId))
+                .ReturnsAsync(await Task.FromResult(new SingleGameDto
+                {
+                    Started = false
+                }));
+
+            var result = await _eventsService.AddEventBet(new EventBetInput
+            {
+                GameId = gameId,
+                AccountId = accountId,
+                IsBaseBet = false,
+                EventId = eventId,
+                Value1 = value1,
+                Value2 = value2
+            });
+
+            Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
+            Assert.AreEqual(EventMapping.TeamTwoWinEventId, result.Result.EventId);
+            Assert.AreEqual(eventBetId, result.Result.Id);
+        }
 
         [Test]
         public async Task EventBet_CannotHaveMoreThanTwoEvents() 
