@@ -332,6 +332,14 @@ public class EventsService : IEventService
             message = "Cannot bet a game which already started";
             return false;
         }
+        
+        UserScore userScore = GetUserScore(eventBetInput.AccountId).GetAwaiter().GetResult().Result;
+
+        if (userScore.NonBaseBetsScore + userScore.BaseBetsScore <= 0 && !eventBetInput.IsBaseBet)
+        {
+            message = "Cannot bet an event if score is less or equal zero";
+            return false;
+        }
 
         if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.Boolean ||
             eventToBet.EventType == Data.Entities.Events.EventType.RuleType.BaseBet)
