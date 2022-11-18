@@ -38,7 +38,6 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
             };
 
             _eventsRepositoryMock.Setup(x => x.GetUserBets(It.IsAny<long>())).Returns(Task.FromResult(scores));
-
             _eventsService = new EventsService(_eventsRepositoryMock.Object, _gamesRepositoryMock.Object);
         }
 
@@ -49,6 +48,8 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
             int gameId = 1;
             int eventBetId = 99;
             int eventId = EventMapping.TeamOneWinEventId;
+
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, eventId, gameId)).ReturnsAsync(await Task.FromResult(true));
 
             _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
             {
@@ -138,6 +139,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
             int gameId = 1;
             int baseEventBetId = 12;
 
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, EventMapping.TeamTwoWinEventId, gameId))
+                .ReturnsAsync(await Task.FromResult(true));
+
             _eventsRepositoryMock.Setup(x => x.GetEvent(EventMapping.TeamOneWinEventId)).ReturnsAsync(await Task.FromResult(new EventDto
             {
                 BetCost = 0,
@@ -219,6 +223,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 EventType = RuleType.Boolean
             }));
 
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, eventId, gameId))
+                .ReturnsAsync(await Task.FromResult(true));
+
             _eventsRepositoryMock
                 .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
                 .ReturnsAsync(await Task.FromResult(new List<ExistingEventBetDto>
@@ -286,6 +293,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 WinValue = 2,
                 Id = eventId
             }));
+
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, eventId, gameId))
+                .ReturnsAsync(await Task.FromResult(true));
 
             _eventsRepositoryMock
                 .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
@@ -364,6 +374,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 EventType = RuleType.Boolean
             }));
 
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, eventId, gameId))
+                .ReturnsAsync(await Task.FromResult(true));
+
             _eventsRepositoryMock
                 .Setup(x => x.GetEventBetsForGameAndUser(gameId, accountId))
                 .ReturnsAsync(await Task.FromResult(new List<ExistingEventBetDto>
@@ -425,6 +438,8 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
             int gameId = 1;
             int eventId = 6;
 
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, eventId, gameId)).ReturnsAsync(await Task.FromResult(false));
+
             _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
             {
                 BetCost = 1,
@@ -474,12 +489,16 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                     EventId = 5
                 }
             };
+
+
             _eventsRepositoryMock.Setup(x => x.GetUserBets(It.IsAny<long>())).Returns(Task.FromResult(scores));
 
             int accountId = 1;
             int gameId = 1;
             int eventBetId = 99;
             int eventId = EventMapping.TeamOneWinEventId;
+
+            _eventsRepositoryMock.Setup(x => x.ValidateUserPointsForBet(accountId, eventId, gameId)).ReturnsAsync(await Task.FromResult(true));
 
             _eventsRepositoryMock.Setup(x => x.GetEvent(eventId)).ReturnsAsync(await Task.FromResult(new EventDto
             {
