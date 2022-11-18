@@ -328,8 +328,14 @@ public class EventsService : IEventService
     {
         message = string.Empty;
 
-        if (eventToBet.EventType == EventType.RuleType.Boolean ||
-            eventToBet.EventType == EventType.RuleType.BaseBet)
+        if (_gamesRepository.GetGameById(eventBetInput.GameId).GetAwaiter().GetResult().Started)
+        {
+            message = "Cannot bet a game which already started";
+            return false;
+        }
+
+        if (eventToBet.EventType == Data.Entities.Events.EventType.RuleType.Boolean ||
+            eventToBet.EventType == Data.Entities.Events.EventType.RuleType.BaseBet)
         {
             if (eventBetInput.Value1.HasValue || eventBetInput.Value2.HasValue)
             {

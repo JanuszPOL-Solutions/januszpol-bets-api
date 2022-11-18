@@ -47,10 +47,10 @@ public class GamesController : BaseApiController
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ServiceResult<SingleGameDto>>> GetGameById(int id)
+    public async Task<ActionResult<ServiceResult<SingleGameWithEventsDto>>> GetGameById(int id)
     {
         var accountId = await _loggedUserService.GetLoggedUserId(User);
-        var result = await _gamesService.GetGame(id, accountId);
+        var result = await _gamesService.GetGameWithEvents(id, accountId);
 
         if (result.IsError)
         {

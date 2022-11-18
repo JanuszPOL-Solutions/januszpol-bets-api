@@ -6,6 +6,10 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
 {
     public class EventMapping : IEntityTypeConfiguration<Event>
     {
+        public const int TeamOneWinEventId = 1;
+        public const int TeamTwoWinEventId = 2;
+        public const int TieEventId = 3;
+
         private const int DefaultBetCost = 1;
         private const int DefaultWinValue = 2;
 
@@ -22,13 +26,13 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
 
             builder.HasOne(x => x.EventType).WithMany().HasForeignKey(x => x.EventTypeId);
 
-            var id = 1;
+            var id = TieEventId + 1;
 
             var eventsCollection = new List<Event>
             {
                 new Event
                 {
-                    Id = id++,
+                    Id = TeamOneWinEventId,
                     Name = "Wygrana pierwszej drużyny",
                     Description = "",
                     EventTypeId = (EventType.RuleType)EventTypeMapping.BaseBetId,
@@ -37,7 +41,7 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                 },
                 new Event
                 {
-                    Id = id++,
+                    Id = TeamTwoWinEventId,
                     Name = "Wygrana drugiej drużyny",
                     Description = "",
                     EventTypeId = (EventType.RuleType)EventTypeMapping.BaseBetId,
@@ -46,7 +50,7 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
                 },
                 new Event
                 {
-                    Id = id++,
+                    Id = TieEventId,
                     Name = "Remis",
                     Description = "",
                     EventTypeId = (EventType.RuleType)EventTypeMapping.BaseBetId,
