@@ -60,9 +60,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -74,6 +71,10 @@ app.UseCors(AllowAll);
 
 if (app.Environment.IsDevelopment())
 {
+    // Configure the HTTP request pipeline.
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
     // for prod this will be handled by the nginx reverse proxy
     app.UseHttpsRedirection();
 }
