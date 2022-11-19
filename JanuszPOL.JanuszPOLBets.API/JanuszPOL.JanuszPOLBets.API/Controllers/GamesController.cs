@@ -19,7 +19,7 @@ public class GamesController : BaseApiController
         _gamesService = gamesService;
         _loggedUserService = loggedUserService;
     }
-    
+
     [HttpGet("")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(ServiceResult<IList<GetGamesResult>>), StatusCodes.Status200OK)]

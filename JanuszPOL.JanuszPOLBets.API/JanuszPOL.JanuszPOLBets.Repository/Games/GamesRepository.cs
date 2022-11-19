@@ -4,6 +4,7 @@ using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
 using JanuszPOL.JanuszPOLBets.Data.Extensions;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace JanuszPOL.JanuszPOLBets.Repository.Games;
 
@@ -16,15 +17,19 @@ public interface IGamesRepository
     Task ClearResultForGame(long gameId);
     Task<SingleGameDto> GetGameById(long gameId);
     Task<SingleGameWithEventsDto> GetGameWithEventsById(int gameId, long accountId);
+    Task<SimpleGameDto> GetSimpleGame(long gameId);
 }
 
 public class GamesRepository : IGamesRepository
 {
     private readonly DataContext _db;
-
-    public GamesRepository(DataContext db)
+    private readonly ILogger<GamesRepository> _logger;
+    public GamesRepository(
+        DataContext db,
+        ILogger<GamesRepository> logger)
     {
         _db = db;
+        _logger = logger;
     }
 
     public async Task Update(UpdateGameDto updateDto)
@@ -34,11 +39,11 @@ public class GamesRepository : IGamesRepository
         game.Team1Score = updateDto.Team1Score;
         game.Team2Score = updateDto.Team2Score;
 
-        if(updateDto.Team1Score > updateDto.Team2Score)
+        if (updateDto.Team1Score > updateDto.Team2Score)
         {
             game.GameResultId = GameResult.Values.Team1;
         }
-        else if(updateDto.Team1Score < updateDto.Team2Score)
+        else if (updateDto.Team1Score < updateDto.Team2Score)
         {
             game.GameResultId = GameResult.Values.Team2;
         }
@@ -218,16 +223,97 @@ public class GamesRepository : IGamesRepository
     public async Task ClearResultForGame(long gameId)
     {
         var game = _db.Games.First(x => x.Id == gameId);
-        
-            game.Team1Score = null;
-            game.Team2Score = null;
-            game.Team1ScoreExtraTime = null;
-            game.Team2ScoreExtraTime = null;
-            game.Team1ScorePenalties = null;
-            game.Team2ScorePenalties = null;
-            game.GameResultId = null;
+
+        game.Team1Score = null;
+        game.Team2Score = null;
+        game.Team1ScoreExtraTime = null;
+        game.Team2ScoreExtraTime = null;
+        game.Team1ScorePenalties = null;
+        game.Team2ScorePenalties = null;
+        game.GameResultId = null;
 
         await _db.SaveChangesAsync();
-        
+    }
+
+    public async Task<SimpleGameDto> GetSimpleGame(long gameId)
+    {
+        var game = await _db.Games
+            .Where(x => x.Id == gameId)
+            .Select(x => new SimpleGameDto
+            {
+                Id = x.Id,
+                PhaseName = x.PhaseName,
+                PhaseId = x.PhaseId,
+                GameDate = x.GameDate,
+                Team1Name = x.Team1.Name,
+                Team1Score = x.Team1Score,
+                Team2Name = x.Team2.Name,
+                Team2Score = x.Team2Score
+            })
+            .FirstOrDefaultAsync();
+
+        if (game == null)
+        {
+            _logger.LogError($"Can't find game with id: {gameId}");
+            return null;
+        }
+
+        var allGameEvents = await _db.Event
+            .Where(x => x.EventTypeId == EventType.RuleType.Boolean)
+            .Select(x => new
+            {
+                EventId = x.Id,
+                Name = x.Name,
+                EventBets = x.Bets
+                    .Where(y => !y.IsDeleted && y.GameId == gameId)
+                    .Select(y => new { y.AccountId, y.Id, y.Result })
+                    .ToList()
+            })
+            .ToListAsync();
+
+        foreach (var gameEvent in allGameEvents)
+        {
+            var wrongEvents = gameEvent.EventBets.Where(x => gameEvent.EventBets.Where(y => y.Id != x.Id).Any(y => y.Result != x.Result)).ToList();
+
+            if (wrongEvents.Any())
+            {
+                _logger.LogError($"There is a bet with different result for game: {game.Id}");
+                foreach (var wrongItem in wrongEvents)
+                {
+                    _logger.LogError($"For event {gameEvent.EventId}, bet: {wrongItem.Id} for account {wrongItem.AccountId} has different result");
+                }
+            }
+        }
+
+        game.Events = allGameEvents
+            .Select(x => new SimpleGameDto.GameEvent
+            {
+                EventId = x.EventId,
+                Name = x.Name,
+                Happened = x.EventBets.Any() ? x.EventBets.Any(y => y.Result == true) : null
+            })
+            .ToList();
+
+        return game;
+    }
+}
+
+public class SimpleGameDto
+{
+    public long Id { get; set; }
+    public DateTime GameDate { get; set; }
+    public string PhaseName { get; set; }
+    public Phase.Types PhaseId { get; set; }
+    public string Team1Name { get; set; }
+    public string Team2Name { get; set; }
+    public int? Team1Score { get; set; }
+    public int? Team2Score { get; set; }
+    public List<GameEvent> Events { get; set; }
+
+    public class GameEvent
+    {
+        public long EventId { get; set; }
+        public string Name { get; set; }
+        public bool? Happened { get; set; }
     }
 }

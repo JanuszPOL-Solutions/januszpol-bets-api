@@ -15,7 +15,7 @@ namespace JanuszPOL.JanuszPOLBets.Data._DbContext.Mappings
             builder.Property(x => x.EventId).IsRequired();
 
             builder.HasOne(x => x.Account).WithMany().HasForeignKey(x => x.AccountId);
-            builder.HasOne(x => x.Event).WithMany().HasForeignKey(x => x.EventId);
+            builder.HasOne(x => x.Event).WithMany(x => x.Bets).HasForeignKey(x => x.EventId);
             builder.HasOne(x => x.Game).WithMany(x => x.EventBets).HasForeignKey(x => x.GameId);
         }
     }

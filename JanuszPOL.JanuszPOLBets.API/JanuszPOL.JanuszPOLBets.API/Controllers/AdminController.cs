@@ -1,4 +1,5 @@
-﻿using JanuszPOL.JanuszPOLBets.Services.Common;
+﻿using JanuszPOL.JanuszPOLBets.Repository.Games;
+using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
@@ -58,6 +59,15 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpGet("match/{id}")]
+        public async Task<ActionResult<ServiceResult<SimpleGameDto>>> GetGame([FromRoute] long id)
+        {
+            return await MethodWrapper(async () =>
+            {
+                return await _gamesService.GetSimpleGame(id);
+            });
         }
     }
 }

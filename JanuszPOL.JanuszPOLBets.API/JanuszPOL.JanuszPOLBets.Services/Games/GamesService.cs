@@ -13,6 +13,7 @@ public interface IGamesService
     Task<bool> AddGame(AddGameInput gameInput);
     Task<ServiceResult<SingleGameDto>> GetGame(int gameId);
     Task<ServiceResult<SingleGameWithEventsDto>> GetGameWithEvents(int gameId, long accountId);
+    Task<ServiceResult<SimpleGameDto>> GetSimpleGame(long gameId);
 }
 
 public class GamesService : IGamesService
@@ -96,5 +97,15 @@ public class GamesService : IGamesService
         return result;
     }
 
+    public async Task<ServiceResult<SimpleGameDto>> GetSimpleGame(long gameId)
+    {
+        var game = await _gamesRepository.GetSimpleGame(gameId);
 
+        if (game == null)
+        {
+            return ServiceResult<SimpleGameDto>.WithErrors("Nie istnieje taki mecz");
+        }
+
+        return ServiceResult<SimpleGameDto>.WithSuccess(game);
+    }
 }
