@@ -1,4 +1,5 @@
-﻿using JanuszPOL.JanuszPOLBets.Repository.Games;
+﻿using JanuszPOL.JanuszPOLBets.Data.Identity;
+using JanuszPOL.JanuszPOLBets.Repository.Games;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Games;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Roles = UserRoles.Admin)]
     public class AdminController : BaseApiController
     {
         private readonly IEventService _eventService;
