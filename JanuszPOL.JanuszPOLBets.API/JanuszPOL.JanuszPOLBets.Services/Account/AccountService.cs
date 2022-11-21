@@ -161,7 +161,7 @@ public class AccountService : IAccountService
         var token = new JwtSecurityToken(
             issuer: _authOptions.Value.ValidIssuer,
             audience: _authOptions.Value.ValidAudience,
-            expires: DateTime.Now.AddHours(3),
+            expires: DateTime.Now.AddHours(_authOptions.Value.TokenExpirationInHours),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
         );
