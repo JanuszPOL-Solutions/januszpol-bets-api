@@ -14,6 +14,7 @@ public interface IGamesService
     Task<ServiceResult<SingleGameDto>> GetGame(int gameId);
     Task<ServiceResult<SingleGameWithEventsDto>> GetGameWithEvents(int gameId, long accountId);
     Task<ServiceResult<SimpleGameDto>> GetSimpleGame(long gameId);
+    Task<ServiceResult<GameBetsDto>> GetGameBets(long gameId);
 }
 
 public class GamesService : IGamesService
@@ -107,5 +108,22 @@ public class GamesService : IGamesService
         }
 
         return ServiceResult<SimpleGameDto>.WithSuccess(game);
+    }
+
+    public async Task<ServiceResult<GameBetsDto>> GetGameBets(long gameId)
+    {
+        var dto = await _gamesRepository.GetBetsForGame(gameId);
+
+        if (dto == null)
+        {
+            return ServiceResult<GameBetsDto>.WithErrors("Nie istnieje taki mecz");
+        }
+
+        if (dto.GameId == 0)
+        {
+            return ServiceResult<GameBetsDto>.WithErrors("Mecz jeszcze się nie rozpoczął");
+        }
+
+        return ServiceResult<GameBetsDto>.WithSuccess(dto);
     }
 }

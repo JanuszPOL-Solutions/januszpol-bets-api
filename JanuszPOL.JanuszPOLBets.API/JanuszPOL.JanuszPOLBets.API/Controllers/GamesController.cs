@@ -5,6 +5,7 @@ using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using JanuszPOL.JanuszPOLBets.Repository.Games;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers;
 
@@ -58,5 +59,16 @@ public class GamesController : BaseApiController
         }
 
         return Ok(result);
+    }
+
+    [HttpGet("{gameId}/bets")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ServiceResult<GameBetsDto>>> GetBetsForGame(long gameId)
+    {
+        return await MethodWrapper(async () =>
+        {
+            return await _gamesService.GetGameBets(gameId);
+        });
     }
 }

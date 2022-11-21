@@ -18,6 +18,7 @@ public interface IGamesRepository
     Task<SingleGameDto> GetGameById(long gameId);
     Task<SingleGameWithEventsDto> GetGameWithEventsById(int gameId, long accountId);
     Task<SimpleGameDto> GetSimpleGame(long gameId);
+    Task<GameBetsDto> GetBetsForGame(long gameId);
 }
 
 public class GamesRepository : IGamesRepository
@@ -295,6 +296,114 @@ public class GamesRepository : IGamesRepository
             .ToList();
 
         return game;
+    }
+
+    public async Task<GameBetsDto> GetBetsForGame(long gameId)
+    {
+        var game = await _db.Games
+            .Where(x => x.Id == gameId)
+            .Select(x => new
+            {
+                GameId = x.Id,
+                Team1Name = x.Team1.Name,
+                Team2Name = x.Team2.Name,
+                Started = DateTime.Now > x.GameDate,
+                x.GameDate,
+                x.Team1Score,
+                x.Team2Score,
+                x.PhaseId,
+                x.PhaseName,
+                ExactScoreBets = x.EventBets.Where(y => y.Id == 8 && !y.IsDeleted).Select(y => new
+                {
+                    y.AccountId,
+                    Team1Score = y.Value1,
+                    Team2Score = y.Value2,
+                    y.Result
+                }).ToList(),
+                ResultBets = x.EventBets.Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet).Select(y => new
+                {
+                    ResultBet = y.EventId,
+                    y.AccountId,
+                    y.Result
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (game == null)
+        {
+            return null;
+        }
+
+        if (!game.Started)
+        {
+            return new GameBetsDto();
+        }
+
+        var users = await _db.Accounts
+            .Where(x => !x.IsDeleted)
+            .OrderBy(x => x.UserName)
+            .Select(x => new
+            {
+                x.UserName,
+                x.Id
+            })
+            .ToListAsync();
+
+        var dto = new GameBetsDto
+        {
+            GameId = game.GameId,
+            GameDate = game.GameDate,
+            Team1Name = game.Team1Name,
+            Team2Name = game.Team2Name,
+            Team1Score = game.Team1Score,
+            Team2Score = game.Team2Score,
+            PhaseId = game.PhaseId,
+            PhaseName = game.PhaseName,
+            Bets = new List<GameBetsDto.Bet>()
+        };
+
+        foreach (var user in users)
+        {
+            var result = game.ResultBets.Where(x => x.AccountId == user.Id).FirstOrDefault();
+            var exactScore = game.ExactScoreBets.Where(x => x.AccountId == user.Id).FirstOrDefault();
+
+            var bet = new GameBetsDto.Bet
+            {
+                Username = user.UserName,
+                ResultBet = result != null ? result.ResultBet : null,
+                ExactScoreTeam1 = exactScore != null ? exactScore.Team1Score : null,
+                ExactScoreTeam2 = exactScore != null ? exactScore.Team2Score : null,
+                ExactScoreResult = exactScore?.Result,
+                ResultBetResult = result?.Result
+            };
+
+            dto.Bets.Add(bet);
+        }
+
+        return dto;
+    }
+}
+
+public class GameBetsDto
+{
+    public long GameId { get; set; }
+    public DateTime GameDate { get; set; }
+    public string Team1Name { get; set; }
+    public string Team2Name { get; set; }
+    public int? Team1Score { get; set; }
+    public int? Team2Score { get; set; }
+    public Phase.Types PhaseId { get; set; }
+    public string PhaseName { get; set; }
+    public List<Bet> Bets { get; set; }
+
+    public class Bet
+    {
+        public string Username { get; set; }
+        public long? ExactScoreTeam1 { get; set; }
+        public long? ExactScoreTeam2 { get; set; }
+        public bool? ExactScoreResult { get; set; }
+        public long? ResultBet { get; set; }
+        public bool? ResultBetResult { get; set; }
     }
 }
 
