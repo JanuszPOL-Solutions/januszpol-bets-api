@@ -333,7 +333,10 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
                 resultEventId = 3;
             }
 
-            var baseBetEvents = await _dataContext.EventBet.Where(x => x.GameId == gameId).ToListAsync();
+            var baseBetEvents = await _dataContext.EventBet
+                .Where(x => x.GameId == gameId)
+                .Where(x => x.EventId == 1 || x.EventId == 2 || x.EventId == 3)
+                .ToListAsync();
                 
             foreach(var bet in baseBetEvents)
             {
