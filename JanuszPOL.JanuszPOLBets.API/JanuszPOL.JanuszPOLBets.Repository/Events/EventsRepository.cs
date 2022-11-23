@@ -28,15 +28,12 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
         Task UpdateBoolBet(long gameId, long eventId, bool eventHappened);
         Task UpdateSingleExactBet(long gameId, int Team1Score, int Team2Score);
         Task UpdateBothExactBet(long gameId, int Team1Score, int Team2Score);
-
-
+        Task<RankingDto> GetFullRanking(DateTime? date = null);
+        Task<bool> ValidateUserPointsForBet(long accountId, long betId, long gameId);
 
         long Team1WinEventId { get; }
         long Team2WinEventId { get; }
         long TieEventId { get; }
-        Task<RankingDto> GetFullRanking();
-        Task<bool> ValidateUserPointsForBet(long accountId, long betId, long gameId);
-
     }
 
     public class EventsRepository : IEventsRepository
@@ -252,10 +249,12 @@ namespace JanuszPOL.JanuszPOLBets.Repository.Events
             return bet;
         }
 
-        public async Task<RankingDto> GetFullRanking()
+        public async Task<RankingDto> GetFullRanking(DateTime? date = null)
         {
+            var rankingForDate = date.HasValue ? date.Value : DateTime.Now;
             var allEventBets = await _dataContext.EventBet
                 .Where(x => !x.IsDeleted)
+                .Where(x => x.Game.GameDate < rankingForDate)
                 .Select(x => new
                 {
                     x.AccountId,

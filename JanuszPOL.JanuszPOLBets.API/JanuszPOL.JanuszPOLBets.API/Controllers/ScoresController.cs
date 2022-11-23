@@ -38,11 +38,17 @@ namespace JanuszPOL.JanuszPOLBets.API.Controllers
         [ProducesResponseType(typeof(ServiceResult<RankingDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ServiceResult<RankingDto>>> GetRanking()
+        public async Task<ActionResult<ServiceResult<RankingDto>>> GetRanking([FromQuery] DateTime? rankingDate, [FromQuery] bool futureBets)
         {
             return await MethodWrapper(async () =>
             {
-                return await _eventService.GetFullRanking();
+                var toDate = rankingDate;
+                if (futureBets)
+                {
+                    toDate = DateTime.Now.AddYears(1);//TMP simplest solution, should be used the last date of tournament
+                }
+
+                return await _eventService.GetFullRanking(new RankingFilterInput { ToDate = toDate });
             });
         }
     }
