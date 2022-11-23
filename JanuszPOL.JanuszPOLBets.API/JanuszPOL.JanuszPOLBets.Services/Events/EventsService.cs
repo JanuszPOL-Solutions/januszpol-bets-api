@@ -26,7 +26,7 @@ public interface IEventService
     Task<ServiceResult> UpdateMatchResults(long gameId, int Team1Score, int Team2Score);
     Task<ServiceResult> UpdateBoolEvent(long gameId, long eventId, bool eventHappened);
 
-    Task<ServiceResult<RankingDto>> GetFullRanking();
+    Task<ServiceResult<RankingDto>> GetFullRanking(RankingFilterInput input);
 }
 
 public class EventsService : IEventService
@@ -232,9 +232,9 @@ public class EventsService : IEventService
         });
     }
 
-    public async Task<ServiceResult<RankingDto>> GetFullRanking()
+    public async Task<ServiceResult<RankingDto>> GetFullRanking(RankingFilterInput input)
     {
-        var ranking = await _eventsRepository.GetFullRanking();
+        var ranking = await _eventsRepository.GetFullRanking(input.ToDate);
 
         return ServiceResult<RankingDto>.WithSuccess(ranking);
     }
