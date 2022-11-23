@@ -25,7 +25,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - nginx-proxy
-  fronted:
+  frontend:
     depends_on:
       - api
     image: ${FRONT_IMAGE}
