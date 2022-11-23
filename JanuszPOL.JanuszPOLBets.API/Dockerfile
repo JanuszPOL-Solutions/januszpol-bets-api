@@ -22,5 +22,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=publish /out .
 
+#set timezone
+RUN ln -sf /usr/share/zoneinfo/Poland /etc/localtime
+
 EXPOSE 80
 ENTRYPOINT ["dotnet", "JanuszPOL.JanuszPOLBets.API.dll"]

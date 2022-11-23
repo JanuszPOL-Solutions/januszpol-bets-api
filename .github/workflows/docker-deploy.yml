@@ -1,0 +1,79 @@
+name: Docker-deploy
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  SRC_DIR: JanuszPOL.JanuszPOLBets.API
+  DOCKER_IMAGE_NAME: januszpol-bets-api
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ env.SRC_DIR }}
+    outputs:
+      tag: ${{ steps.latestgittag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: get-latest-git-tag
+        id: latestgittag
+        run: |
+          gittag=`git describe --tags`
+          echo "tag=$gittag" >> $GITHUB_OUTPUT
+      - name: build-docker-image
+        run: docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.latestgittag.outputs.tag }} .
+      - name: zip-docker-image
+        run: docker save ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.latestgittag.outputs.tag }} | gzip > ${{ env.DOCKER_IMAGE_NAME }}-${{ steps.latestgittag.outputs.tag }}.tar.gz
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          if-no-files-found: error
+          retention-days: 5
+          path: |
+            ${{ env.SRC_DIR }}/${{ env.DOCKER_IMAGE_NAME }}-${{ steps.latestgittag.outputs.tag }}.tar.gz
+  docker-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    if: ${{ always() }}
+    needs: [docker-build]
+    env:
+      TAG: ${{needs.docker-build.outputs.tag}}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@master
+        name: download docker image artifact
+        with:
+          name: docker-image
+          path: ${{ env.SRC_DIR }}
+      - name: setup ssh
+        run: |
+          echo "add id_rsa"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ env.ID_RSA }}" > ~/.ssh/id_rsa_januszpol
+          chmod 600 ~/.ssh/id_rsa_januszpol
+          ssh-keyscan ${{ env.HOST_DOMAIN }} >> ~/.ssh/known_hosts
+        env:
+          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
+          ID_RSA: ${{ secrets.ID_RSA }}
+      - name: upload docker image to server
+        run: |
+          scp -i ~/.ssh/id_rsa_januszpol ${{ env.SRC_DIR }}/${{ env.DOCKER_IMAGE_NAME }}-${{ env.TAG }}.tar.gz $HOST_USERNAME@$HOST_DOMAIN:/home/admin/docker-images
+        env:
+          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
+          HOST_USERNAME: ${{ secrets.HOST_USERNAME }}
+      - name: backup db and run new image
+        run: |
+          ssh -i ~/.ssh/id_rsa_januszpol $HOST_USERNAME@$HOST_DOMAIN  "bash -s" < $GITHUB_WORKSPACE/scripts/deploy.sh "${{ env.TAG }}" "${{ env.SQLDB_BETS_PASSWORD }}"
+        env:
+          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
+          HOST_USERNAME: ${{ secrets.HOST_USERNAME }}
+          SQLDB_BETS_PASSWORD: ${{ secrets.SQLDB_BETS_PASSWORD }}
