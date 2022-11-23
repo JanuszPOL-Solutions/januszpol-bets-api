@@ -24,7 +24,7 @@ jobs:
         id: latestgittag
         run: |
           gittag=`git describe --tags`
-          echo "::set-output name=tag::$gittag"
+          echo "tag=$gittag" >> $GITHUB_OUTPUT
       - name: build-docker-image
         run: docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.latestgittag.outputs.tag }} .
       - name: zip-docker-image
@@ -60,8 +60,9 @@ jobs:
           chmod 700 ~/.ssh
           echo "${{ env.ID_RSA }}" > ~/.ssh/id_rsa_januszpol
           chmod 600 ~/.ssh/id_rsa_januszpol
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ env.HOST_DOMAIN }} >> ~/.ssh/known_hosts
         env:
+          HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
           ID_RSA: ${{ secrets.ID_RSA }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
       - name: upload docker image to server
