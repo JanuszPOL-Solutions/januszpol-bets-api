@@ -67,13 +67,13 @@ jobs:
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
       - name: upload docker image to server
         run: |
-          scp -i $GITHUB_WORKSPACE/../.ssh/id_rsa_januszpol ${{ env.SRC_DIR }}/${{ env.DOCKER_IMAGE_NAME }}-${{ env.TAG }}.tar.gz $HOST_USERNAME@$HOST_DOMAIN:/home/admin/docker-images
+          scp -i ~/.ssh/id_rsa_januszpol ${{ env.SRC_DIR }}/${{ env.DOCKER_IMAGE_NAME }}-${{ env.TAG }}.tar.gz $HOST_USERNAME@$HOST_DOMAIN:/home/admin/docker-images
         env:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
           HOST_USERNAME: ${{ secrets.HOST_USERNAME }}
       - name: test
         run: |
-          ssh -i $GITHUB_WORKSPACE/../.ssh/id_rsa_januszpol $HOST_USERNAME@$HOST_DOMAIN  "bash -s" < $GITHUB_WORKSPACE/scripts/deploy.sh "${{ env.TAG }}" "${{ env.SQLDB_BETS_PASSWORD }}"
+          ssh -i ~/.ssh/id_rsa_januszpol $HOST_USERNAME@$HOST_DOMAIN  "bash -s" < $GITHUB_WORKSPACE/scripts/deploy.sh "${{ env.TAG }}" "${{ env.SQLDB_BETS_PASSWORD }}"
         env:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
           HOST_USERNAME: ${{ secrets.HOST_USERNAME }}
