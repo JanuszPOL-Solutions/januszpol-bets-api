@@ -32,6 +32,6 @@ echo "update API_IMAGE in .env"
 sed -i~ "/^API_IMAGE=/s/=.*/=\"januszpol-bets-api:$TAG\"/" /home/admin/januszpol-bets-api/.env
 
 # #run docker compose
-echo "start services (docker compose up in the future)"
-# docker compose -f /home/admin/januszpol-bets-api/docker-compose.prod.yml -p januszpol up -d
+echo "start services (docker compose up)"
+docker compose -f /home/admin/januszpol-bets-api/docker-compose.prod.yml -p januszpol up -d
 

@@ -71,7 +71,7 @@ jobs:
         env:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
           HOST_USERNAME: ${{ secrets.HOST_USERNAME }}
-      - name: test
+      - name: backup db and run new image
         run: |
           ssh -i ~/.ssh/id_rsa_januszpol $HOST_USERNAME@$HOST_DOMAIN  "bash -s" < $GITHUB_WORKSPACE/scripts/deploy.sh "${{ env.TAG }}" "${{ env.SQLDB_BETS_PASSWORD }}"
         env:
