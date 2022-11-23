@@ -56,14 +56,11 @@ jobs:
       - name: setup ssh
         run: |
           echo "add id_rsa"
-          mkdir $GITHUB_WORKSPACE/../.ssh/
-          chmod 700 $GITHUB_WORKSPACE/../.ssh/
-          echo "${{ env.ID_RSA }}" > $GITHUB_WORKSPACE/../.ssh/id_rsa_januszpol
-
-          chmod 600 $GITHUB_WORKSPACE/../.ssh/id_rsa_januszpol
-
-          #output from ssh-keyscan januszpol.eu on my host
-          echo "${{ env.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ env.ID_RSA }}" > ~/.ssh/id_rsa_januszpol
+          chmod 600 ~/.ssh/id_rsa_januszpol
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
         env:
           ID_RSA: ${{ secrets.ID_RSA }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
