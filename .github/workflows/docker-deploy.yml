@@ -64,7 +64,6 @@ jobs:
         env:
           HOST_DOMAIN: ${{ secrets.HOST_DOMAIN }}
           ID_RSA: ${{ secrets.ID_RSA }}
-          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
       - name: upload docker image to server
         run: |
           scp -i ~/.ssh/id_rsa_januszpol ${{ env.SRC_DIR }}/${{ env.DOCKER_IMAGE_NAME }}-${{ env.TAG }}.tar.gz $HOST_USERNAME@$HOST_DOMAIN:/home/admin/docker-images
