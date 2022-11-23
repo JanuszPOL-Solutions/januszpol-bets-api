@@ -35,11 +35,23 @@ sed -i~ "/^API_IMAGE=/s/=.*/=\"januszpol-bets-api:$TAG\"/" /home/admin/januszpol
 echo "start services (docker compose up)"
 docker compose -f /home/admin/januszpol-bets-api/docker-compose.prod.yml -p januszpol up -d
 
-sleep 5s
+sleep 10s
 
 #print info about docker containers
 echo "containers status"
 docker ps --filter "name=januszpol"
 
-echo "system space usage"
-df -h --total
+echo "check statuses"
+frontend_container_name="januszpol-fronted-1"
+db_container_name="januszpol-db-1"
+api_container_name="januszpol-api-1"
+nginx_container_name="nginx-proxy"
+nginx_acme_container_name="januszpol-nginx-proxy-acme-1"
+
+if [ $(docker inspect -f '{{.State.Running}}' $db_container_name) = "true" ] && [ $(docker inspect -f '{{.State.Running}}' $api_container_name) = "true" ] && [ $(docker inspect -f '{{.State.Running}}' $nginx_container_name) = "true" ] && [ $(docker inspect -f '{{.State.Running}}' $nginx_acme_container_name) = "true" ] && [ $(docker inspect -f '{{.State.Running}}' $frontend_container_name) = "true" ]
+then
+    echo "all containers are running"
+else 
+    echo "Some containers failed to start, check logs on the server" >&2
+    exit 1
+fi
