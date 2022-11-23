@@ -35,3 +35,11 @@ sed -i~ "/^API_IMAGE=/s/=.*/=\"januszpol-bets-api:$TAG\"/" /home/admin/januszpol
 echo "start services (docker compose up)"
 docker compose -f /home/admin/januszpol-bets-api/docker-compose.prod.yml -p januszpol up -d
 
+sleep 5s
+
+#print info about docker containers
+echo "containers status"
+docker ps --filter "name=januszpol"
+
+echo "system space usage"
+df -h --total
