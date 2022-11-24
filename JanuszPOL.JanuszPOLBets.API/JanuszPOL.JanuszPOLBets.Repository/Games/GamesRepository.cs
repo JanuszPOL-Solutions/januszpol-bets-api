@@ -1,8 +1,6 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
-using JanuszPOL.JanuszPOLBets.Data.Extensions;
-using JanuszPOL.JanuszPOLBets.Data.Migrations;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
