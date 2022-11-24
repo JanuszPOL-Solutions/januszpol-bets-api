@@ -1,7 +1,6 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data._DbContext;
 using JanuszPOL.JanuszPOLBets.Data.Entities;
 using JanuszPOL.JanuszPOLBets.Data.Entities.Events;
-using JanuszPOL.JanuszPOLBets.Data.Extensions;
 using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -313,19 +312,34 @@ public class GamesRepository : IGamesRepository
                 x.Team2Score,
                 x.PhaseId,
                 x.PhaseName,
-                ExactScoreBets = x.EventBets.Where(y => y.Id == 8 && !y.IsDeleted).Select(y => new
-                {
-                    y.AccountId,
-                    Team1Score = y.Value1,
-                    Team2Score = y.Value2,
-                    y.Result
-                }).ToList(),
+                ExactScoreBets = x.EventBets
+                    .Where(y => y.EventId == 8 && !y.IsDeleted)
+                    .Select(y => new
+                    {
+                        y.AccountId,
+                        Team1Score = y.Value1,
+                        Team2Score = y.Value2,
+                        y.Event.BetCost,
+                        y.Event.WinValue,
+                        y.Result
+                    }).ToList(),
                 ResultBets = x.EventBets.Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet).Select(y => new
                 {
                     ResultBet = y.EventId,
                     y.AccountId,
+                    y.Event.WinValue,
                     y.Result
-                }).ToList()
+                }).ToList(),
+                BoolBets = x.EventBets
+                    .Where(y => y.Event.EventTypeId == EventType.RuleType.Boolean && !y.IsDeleted)
+                    .Select(y => new
+                    {
+                        y.AccountId,
+                        EventName = y.Event.Name,
+                        y.Event.BetCost,
+                        y.Event.WinValue,
+                        y.Result
+                    })
             })
             .FirstOrDefaultAsync();
 
@@ -366,15 +380,23 @@ public class GamesRepository : IGamesRepository
         {
             var result = game.ResultBets.Where(x => x.AccountId == user.Id).FirstOrDefault();
             var exactScore = game.ExactScoreBets.Where(x => x.AccountId == user.Id).FirstOrDefault();
+            var boolBets = game.BoolBets.Where(x => x.AccountId == user.Id).ToList();
 
             var bet = new GameBetsDto.Bet
             {
                 Username = user.UserName,
                 ResultBet = result != null ? result.ResultBet : null,
+                ResultBetResult = result?.Result,
                 ExactScoreTeam1 = exactScore != null ? exactScore.Team1Score : null,
                 ExactScoreTeam2 = exactScore != null ? exactScore.Team2Score : null,
                 ExactScoreResult = exactScore?.Result,
-                ResultBetResult = result?.Result
+                BoolBets = boolBets.Select(x => new GameBetsDto.Bet.BoolBet
+                {
+                    Name = x.EventName,
+                    Result = x.Result,
+                    Cost = x.BetCost,
+                    WinValue = x.Result == true ? x.WinValue : 0
+                }).ToArray()
             };
 
             dto.Bets.Add(bet);
@@ -404,6 +426,15 @@ public class GameBetsDto
         public bool? ExactScoreResult { get; set; }
         public long? ResultBet { get; set; }
         public bool? ResultBetResult { get; set; }
+        public BoolBet[] BoolBets { get; set; }
+
+        public class BoolBet
+        {
+            public string Name { get; set; }
+            public bool? Result { get; set; }
+            public int Cost { get; set; }
+            public int WinValue { get; set; }
+        }
     }
 }
 
