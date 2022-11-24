@@ -42,7 +42,7 @@ echo "containers status"
 docker ps --filter "name=januszpol"
 
 echo "check statuses"
-frontend_container_name="januszpol-fronted-1"
+frontend_container_name="januszpol-frontend-1"
 db_container_name="januszpol-db-1"
 api_container_name="januszpol-api-1"
 nginx_container_name="nginx-proxy"
