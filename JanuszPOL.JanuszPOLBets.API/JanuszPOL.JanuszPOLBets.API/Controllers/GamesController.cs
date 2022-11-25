@@ -5,7 +5,6 @@ using JanuszPOL.JanuszPOLBets.Services.Games;
 using JanuszPOL.JanuszPOLBets.Services.Games.ServiceModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
-using JanuszPOL.JanuszPOLBets.Repository.Games;
 
 namespace JanuszPOL.JanuszPOLBets.API.Controllers;
 

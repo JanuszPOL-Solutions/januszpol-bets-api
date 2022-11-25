@@ -1,5 +1,5 @@
 ﻿using JanuszPOL.JanuszPOLBets.Data.Identity;
-using JanuszPOL.JanuszPOLBets.Repository.Games;
+using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Common;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Games;

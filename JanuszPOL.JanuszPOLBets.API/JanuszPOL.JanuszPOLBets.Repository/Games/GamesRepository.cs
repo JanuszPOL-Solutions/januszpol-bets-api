@@ -78,26 +78,26 @@ public class GamesRepository : IGamesRepository
             .Where(x => dto.PhaseNames == null || dto.PhaseNames.Contains(x.PhaseName))
             .OrderBy(x => x.GameDate)
             .Where(x => dto.Beted == null ||
-                (dto.Beted == GetGameDto.BetState.NotBeted && //not beted
+                dto.Beted == GetGameDto.BetState.NotBeted && //not beted
                     !x.EventBets
                         .Where(y => y.AccountId == dto.AccountId)
                         .Where(y => !y.IsDeleted)
                         .Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet)
-                        .Any()) ||
-                (dto.Beted == GetGameDto.BetState.Beted && //beted
+                        .Any() ||
+                dto.Beted == GetGameDto.BetState.Beted && //beted
                     x.EventBets
                             .Where(y => y.AccountId == dto.AccountId)
                             .Where(y => !y.IsDeleted)
                             .Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet)
                             .Any()
-                ) ||
-                (dto.Beted == GetGameDto.BetState.ToBet &&
+                 ||
+                dto.Beted == GetGameDto.BetState.ToBet &&
                     !x.EventBets
                                 .Where(y => y.AccountId == dto.AccountId)
                                 .Where(y => !y.IsDeleted)
                                 .Where(y => y.Event.EventTypeId == EventType.RuleType.BaseBet)
                                 .Any() && x.GameDate > DateTime.Now
-                )
+
             )
             .Select(x => new GetGameResultDto
             {
@@ -263,7 +263,7 @@ public class GamesRepository : IGamesRepository
             .Select(x => new
             {
                 EventId = x.Id,
-                Name = x.Name,
+                x.Name,
                 EventBets = x.Bets
                     .Where(y => !y.IsDeleted && y.GameId == gameId)
                     .Select(y => new { y.AccountId, y.Id, y.Result })
@@ -332,6 +332,7 @@ public class GamesRepository : IGamesRepository
                 }).ToList(),
                 BoolBets = x.EventBets
                     .Where(y => y.Event.EventTypeId == EventType.RuleType.Boolean && !y.IsDeleted)
+                    .OrderBy(y => y.EventId)
                     .Select(y => new
                     {
                         y.AccountId,
@@ -403,57 +404,5 @@ public class GamesRepository : IGamesRepository
         }
 
         return dto;
-    }
-}
-
-public class GameBetsDto
-{
-    public long GameId { get; set; }
-    public DateTime GameDate { get; set; }
-    public string Team1Name { get; set; }
-    public string Team2Name { get; set; }
-    public int? Team1Score { get; set; }
-    public int? Team2Score { get; set; }
-    public Phase.Types PhaseId { get; set; }
-    public string PhaseName { get; set; }
-    public List<Bet> Bets { get; set; }
-
-    public class Bet
-    {
-        public string Username { get; set; }
-        public long? ExactScoreTeam1 { get; set; }
-        public long? ExactScoreTeam2 { get; set; }
-        public bool? ExactScoreResult { get; set; }
-        public long? ResultBet { get; set; }
-        public bool? ResultBetResult { get; set; }
-        public BoolBet[] BoolBets { get; set; }
-
-        public class BoolBet
-        {
-            public string Name { get; set; }
-            public bool? Result { get; set; }
-            public int Cost { get; set; }
-            public int WinValue { get; set; }
-        }
-    }
-}
-
-public class SimpleGameDto
-{
-    public long Id { get; set; }
-    public DateTime GameDate { get; set; }
-    public string PhaseName { get; set; }
-    public Phase.Types PhaseId { get; set; }
-    public string Team1Name { get; set; }
-    public string Team2Name { get; set; }
-    public int? Team1Score { get; set; }
-    public int? Team2Score { get; set; }
-    public List<GameEvent> Events { get; set; }
-
-    public class GameEvent
-    {
-        public long EventId { get; set; }
-        public string Name { get; set; }
-        public bool? Happened { get; set; }
     }
 }
