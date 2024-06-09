@@ -11,7 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JanuszPOL.JanuszPOLBets.Ser
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JanuszPOL.JanuszPOLBets.Repository", "JanuszPOL.JanuszPOLBets.Repository\JanuszPOL.JanuszPOLBets.Repository.csproj", "{A4DC0400-6B57-45B7-9877-61DD84BF9C1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JanuszPOL.JanuszPOLBets.Services.Tests", "JanuszPOL.JanuszPOLBets.Services.Tests\JanuszPOL.JanuszPOLBets.Services.Tests.csproj", "{DD3B84AD-BF27-4E6B-B53A-E61627D835AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JanuszPOL.JanuszPOLBets.Services.Tests", "JanuszPOL.JanuszPOLBets.Services.Tests\JanuszPOL.JanuszPOLBets.Services.Tests.csproj", "{DD3B84AD-BF27-4E6B-B53A-E61627D835AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1327C974-4A2B-4649-A8D2-1518639E8482}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

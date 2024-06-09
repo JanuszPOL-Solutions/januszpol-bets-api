@@ -7,6 +7,7 @@ using JanuszPOL.JanuszPOLBets.Repository.Games.Dto;
 using JanuszPOL.JanuszPOLBets.Services.Events;
 using JanuszPOL.JanuszPOLBets.Services.Events.ServiceModels;
 using Moq;
+using NUnit.Framework.Legacy;
 using static JanuszPOL.JanuszPOLBets.Data.Entities.Events.EventType;
 
 namespace JanuszPOL.JanuszPOLBets.Services.Tests
@@ -96,9 +97,10 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 GameId = gameId
             });
 
-            Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
-            Assert.AreEqual(eventId, result.Result.EventId);
-            Assert.AreEqual(eventBetId, result.Result.Id);
+
+            ClassicAssert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
+            ClassicAssert.AreEqual(eventId, result.Result.EventId);
+            ClassicAssert.AreEqual(eventBetId, result.Result.Id);
         }
 
         [Test]
@@ -129,7 +131,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 GameId = gameId
             });
 
-            Assert.IsTrue(result.Errors.Count > 0);
+            ClassicAssert.IsTrue(result.Errors.Count > 0);
         }
 
         [Test]
@@ -201,10 +203,10 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 BetType = BaseBetType.Team2,
                 GameId = gameId
             });
-
-            Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
-            Assert.AreEqual(EventMapping.TeamTwoWinEventId, result.Result.EventId);
-            Assert.AreEqual(baseEventBetId, result.Result.Id);
+            //TODO: move to nicef asserts
+            ClassicAssert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
+            ClassicAssert.AreEqual(EventMapping.TeamTwoWinEventId, result.Result.EventId);
+            ClassicAssert.AreEqual(baseEventBetId, result.Result.Id);
         }
 
         [Test]
@@ -272,9 +274,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 IsBaseBet = false
             });
 
-            Assert.AreEqual(RuleType.Boolean, result.Result.EventTypeId);
-            Assert.AreEqual(eventId, result.Result.EventId);
-            Assert.AreEqual(eventBetId, result.Result.Id);
+            ClassicAssert.AreEqual(RuleType.Boolean, result.Result.EventTypeId);
+            ClassicAssert.AreEqual(eventId, result.Result.EventId);
+            ClassicAssert.AreEqual(eventBetId, result.Result.Id);
         }
 
         [Test]
@@ -354,9 +356,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 Value2 = value2
             });
 
-            Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
-            Assert.AreEqual(EventMapping.TeamTwoWinEventId, result.Result.EventId);
-            Assert.AreEqual(eventBetId, result.Result.Id);
+            ClassicAssert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
+            ClassicAssert.AreEqual(EventMapping.TeamTwoWinEventId, result.Result.EventId);
+            ClassicAssert.AreEqual(eventBetId, result.Result.Id);
         }
 
         [Test]
@@ -418,7 +420,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 IsBaseBet = false
             });
 
-            Assert.IsTrue(result.Errors.Count > 0);
+            ClassicAssert.IsTrue(result.Errors.Count > 0);
         }
 
         [Test]
@@ -475,7 +477,7 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 IsBaseBet = false
             });
 
-            Assert.IsTrue(result.Errors.Count > 0);
+            ClassicAssert.IsTrue(result.Errors.Count > 0);
         }
 
         [Test]
@@ -545,9 +547,9 @@ namespace JanuszPOL.JanuszPOLBets.Services.Tests
                 GameId = gameId
             });
 
-            Assert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
-            Assert.AreEqual(eventId, result.Result.EventId);
-            Assert.AreEqual(eventBetId, result.Result.Id);
+            ClassicAssert.AreEqual(RuleType.BaseBet, result.Result.EventTypeId);
+            ClassicAssert.AreEqual(eventId, result.Result.EventId);
+            ClassicAssert.AreEqual(eventBetId, result.Result.Id);
         }
     }
 }
