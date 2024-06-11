@@ -1,6 +1,7 @@
 name: Docker-deploy
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - '*'
@@ -30,7 +31,7 @@ jobs:
       - name: zip-docker-image
         run: docker save ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.latestgittag.outputs.tag }} | gzip > ${{ env.DOCKER_IMAGE_NAME }}-${{ steps.latestgittag.outputs.tag }}.tar.gz
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           if-no-files-found: error
@@ -48,7 +49,7 @@ jobs:
       TAG: ${{needs.docker-build.outputs.tag}}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         name: download docker image artifact
         with:
           name: docker-image
